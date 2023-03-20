@@ -5,7 +5,7 @@ import {
   CamModel,
   CamFamily,
   BuildInfo
-} from '@/util/buildmeta';
+} from '@/interfaces/buildmeta';
 
 type Props = {
   build: BuildInfo;
