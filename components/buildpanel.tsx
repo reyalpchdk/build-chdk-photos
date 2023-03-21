@@ -22,7 +22,7 @@ export default function BuildPanel({ infoUrl }: Props) {
         setData(data)
         setInfoLoading(false)
       })
-  }, [])
+  }, [infoUrl])
 
   return (
     <div>
