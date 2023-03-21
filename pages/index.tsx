@@ -15,6 +15,7 @@ export default function Home() {
       <main className="p-10">
         <h1 className="font-bold text-2xl mb-2">CHDK builds</h1>
         <BuildPanel infoUrl="https://build.chdk.photos/builds/trunk/meta/build_info.json" />
+        <BuildPanel infoUrl="https://build.chdk.photos/builds/release/meta/build_info.json" />
       </main>
     </>
   )

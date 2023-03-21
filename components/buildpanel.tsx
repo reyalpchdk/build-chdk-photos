@@ -7,8 +7,13 @@ type Props = {
 }
 
 export default function BuildPanel({ infoUrl }: Props) {
-  const [data, setData]:[any, any] = useState(null)
+  const [data, setData] = useState(null)
   const [infoLoading, setInfoLoading] = useState(false)
+  const [showBuilds, setShowBuilds] = useState(false)
+
+  const onSummaryClick = () => {
+    setShowBuilds(!showBuilds);
+  }
   useEffect(() => {
     setInfoLoading(true)
     fetch(infoUrl)
@@ -24,8 +29,8 @@ export default function BuildPanel({ infoUrl }: Props) {
       {infoLoading && "loading..."}
       {data && (
       <>
-      <BuildSummary build_info={data} />
-      <BuildSelector build_info={data} />
+      <BuildSummary build_info={data} handle_click={onSummaryClick} />
+      {showBuilds && <BuildSelector build_info={data} />}
       </>
       )}
     </div>
