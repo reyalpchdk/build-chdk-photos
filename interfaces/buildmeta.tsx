@@ -9,6 +9,7 @@ export type BuildDesc = {
   version: string;
   revision: string;
   svn: string;
+  svn_checkout: string;
 }
 
 export type BuildStatus = {
@@ -43,9 +44,31 @@ export type CamFamily = {
   models: CamModel[];
 }
 
+export type PortState = {
+  desc: string;
+  count: number;
+}
+
+export type BuildCounts = {
+  models: number;
+  cameras: number;
+  states: PortState[];
+}
+
+export type SvnLogEntry = {
+  svn: string;
+  revision: string;
+  author: string;
+  utc: string;
+  msg: string[];
+}
+
 export type BuildInfo = {
   info_version: string;
   build: BuildDesc;
+  files_path: string;
   files: CamFamily[];
+  counts: BuildCounts;
+  svnlog: SvnLogEntry[];
 }
 
