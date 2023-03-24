@@ -5,15 +5,14 @@ import {
 
 type Props = {
   build_info: BuildInfo;
-  handle_click: () => void;
 }
 
-export default function BuildSummary({ build_info, handle_click }: Props) {
+export default function BuildSummary({ build_info }: Props) {
   const build = build_info.build;
   return (
-    <button onClick={handle_click}>
+    <div>
     {build.desc} {build.type} ({build.type_desc}) {build.version}-{build.revision} built {build.utc}
-    </button>
+    </div>
   )
 }
 

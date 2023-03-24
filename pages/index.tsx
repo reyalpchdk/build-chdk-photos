@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '@/styles/Home.module.css'
-import BuildPanel from '@/components/buildpanel'
+import BranchSelector from '@/components/branchselector'
 
 import logo from '../img/chdk_logo-200.png'
 
@@ -27,8 +27,7 @@ export default function Home() {
         CHDK is an unofficial, unsupported third party firmware add-on for certain Canon point and shoot and EOS M cameras. CHDK is not supported by or affiliated with Canon. CHDK is provided as-is, with absolutely no warranty. Any use of CHDK is at the user&apos;s own risk.
         </p>
         <h2 className="font-bold text-2xl my-2">Available branches</h2>
-        <BuildPanel infoUrl="https://build.chdk.photos/builds/trunk/meta/build_info.json" />
-        <BuildPanel infoUrl="https://build.chdk.photos/builds/release/meta/build_info.json" />
+        <BranchSelector branches={['trunk','release']} base_url="https://build.chdk.photos/builds" />
       </main>
     </>
   )
