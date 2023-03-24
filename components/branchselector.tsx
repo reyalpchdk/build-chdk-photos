@@ -58,14 +58,14 @@ export default function BranchSelector({ branches, base_url }: Props) {
         ))}
       </div>
       {branches.map((bname) => (
-        <div key={bname}>
-        {(bname === sel_branch && data[bname].status === LoadStatus.LOADED) && (
+        (bname === sel_branch && data[bname].status === LoadStatus.LOADED) && (
+        <div key={bname} className="border border-slate-300 p-1">
           <>
           <BuildSummary build_info={data[bname].info} />
           <BuildSelector build_info={data[bname].info} />
           </>
-        )}
         </div>
+        )
       ))}
     </>
   )

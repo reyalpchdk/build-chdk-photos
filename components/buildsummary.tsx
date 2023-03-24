@@ -11,7 +11,7 @@ export default function BuildSummary({ build_info }: Props) {
   const build = build_info.build;
   return (
     <div>
-    {build.desc} {build.type} ({build.type_desc}) {build.version}-{build.revision} built {build.utc}
+    {build.desc} {build.type_desc} ({build.type}) {build.version}-{build.revision} built {build.utc}
     </div>
   )
 }
