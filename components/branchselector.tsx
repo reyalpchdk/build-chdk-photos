@@ -9,6 +9,7 @@ import {
 type Props = {
   branches: string[];
   base_url: string;
+  builds_path: string;
 }
 
 enum LoadStatus {
@@ -22,7 +23,7 @@ type BranchState = {
   status: LoadStatus;
 }
 
-export default function BranchSelector({ branches, base_url }: Props) {
+export default function BranchSelector({ branches, base_url, builds_path }: Props) {
   const [data, setData] = useState(() => branches.reduce( (s:any,bname) => {
     s[bname]={status:LoadStatus.LOADING}
     return s
@@ -32,13 +33,13 @@ export default function BranchSelector({ branches, base_url }: Props) {
 
   useEffect(() => {
     branches.forEach( (bname) => {
-      fetch(base_url+'/'+bname+'/meta/build_info.json')
+      fetch(base_url+builds_path+'/'+bname+'/meta/build_info.json')
         .then((res) => res.json())
         .then((binfo) => {
           setData((data:any) => ({...data,[bname]:{info:binfo, status:LoadStatus.LOADED }}))
         })
     });
-  }, [branches, base_url])
+  }, [branches, base_url, builds_path])
 
   return (
     <>
@@ -62,7 +63,7 @@ export default function BranchSelector({ branches, base_url }: Props) {
         <div key={bname} className="border border-slate-300 p-1">
           <>
           <BuildSummary build_info={data[bname].info} />
-          <BuildSelector build_info={data[bname].info} />
+          <BuildSelector build_info={data[bname].info} base_url={base_url} />
           </>
         </div>
         )

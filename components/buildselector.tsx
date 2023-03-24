@@ -35,13 +35,15 @@ function FamPanel({ build_info, sel, setSel }: FamPanelProps) {
 }
 
 type ModPanelProps = {
-  build_info: BuildInfo;
   sel: SelId;
-  sel_fam: SelId;
+  sel_fam?: CamFamily;
   setSel: SelSetter;
 }
 
-function ModPanel({ build_info, sel, sel_fam, setSel }: ModPanelProps) {
+function ModPanel({ sel, sel_fam, setSel }: ModPanelProps) {
+  if(!sel_fam) {
+    return null
+  }
   const bg_color = (id:SelId,sel:SelId) => {
     if(id === sel) {
       return 'bg-sky-400'
@@ -52,7 +54,7 @@ function ModPanel({ build_info, sel, sel_fam, setSel }: ModPanelProps) {
     <div className="min-w-[19em]">
       <h3 className="font-bold text-l my-1">Select model</h3>
       <div className="max-h-[50vh] overflow-y-auto">
-      {build_info.files.find((fam: CamFamily) => fam.id == sel_fam)?.models.map((mod: CamModel) => (
+      {sel_fam?.models.map((mod: CamModel) => (
         <button
           onClick={() => setSel((mod.id === sel)?null:mod.id)}
           key={mod.id}
@@ -65,29 +67,52 @@ function ModPanel({ build_info, sel, sel_fam, setSel }: ModPanelProps) {
   )
 }
 
-type BuildSelectorProps = {
-  build_info: BuildInfo;
+type FwPanelProps = {
+  sel: SelId;
+  sel_mod?: CamModel;
+  setSel: SelSetter;
+  files_url: string;
 }
 
-export default function BuildSelector({ build_info }: BuildSelectorProps) {
-  const host = 'https://build.chdk.photos';
-  const [sel_fam, setFam] = useState<SelId>(null);
-  const [sel_mod, setMod] = useState<SelId>(null);
-
+function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
+  if(!sel_mod) {
+    return null
+  }
   return (
     <div>
-      <FamPanel build_info={build_info} sel={sel_fam} setSel={setFam} />
-      <div className="flex gap-1">
-        <ModPanel build_info={build_info} sel={sel_mod} sel_fam={sel_fam} setSel={setMod} />
-        <div>
-        {build_info.files.find((fam: CamFamily) => fam.id === sel_fam)
-          ?.models.find((mod: CamModel) => (mod.id === sel_mod))
-          ?.fw.map((fw: CamFirmware) => (
-            <div key={sel_mod + ' ' + fw.id}>
-              {fw.id} Full <a href={host+build_info.files_path+'/'+fw.full.file}>{fw.full.file}</a> Small <a href={host+build_info.files_path+'/'+fw.small.file}>{fw.small.file}</a>
-            </div>
-        ))}
+      <h3 className="font-bold text-l my-1">Supported Canon Firmware</h3>
+      {sel_mod.fw.map((fw: CamFirmware) => (
+        <div
+          key={sel_mod.id + ' ' + fw.id}
+          className={"text-left block p-1 w-full even:bg-slate-50 odd:bg-sky-100"}>
+          {fw.id}
+          {' '}<a href={files_url+'/'+fw.full.file} className="underline">full</a>
+          {' '}<a href={files_url+'/'+fw.small.file} className="underline">small</a>
         </div>
+      ))}
+    </div>
+  )
+
+}
+
+type BuildSelectorProps = {
+  build_info: BuildInfo;
+  base_url: string;
+}
+
+export default function BuildSelector({ build_info, base_url }: BuildSelectorProps) {
+  const [sel_fam_id, setFam] = useState<SelId>(null);
+  const [sel_mod_id, setMod] = useState<SelId>(null);
+  const [sel_fw_id, setFw] = useState<SelId>(null);
+
+  const sel_fam = build_info.files.find((fam: CamFamily) => fam.id === sel_fam_id)
+  const sel_mod = sel_fam?.models.find((mod: CamModel) => (mod.id === sel_mod_id))
+  return (
+    <div>
+      <FamPanel build_info={build_info} sel={sel_fam_id} setSel={setFam} />
+      <div className="flex gap-1">
+        <ModPanel sel={sel_mod_id} sel_fam={sel_fam} setSel={setMod} />
+        <FwPanel sel={sel_fw_id} sel_mod={sel_mod} setSel={setFw} files_url={base_url+build_info.files_path} />
       </div>
     </div>
   )
