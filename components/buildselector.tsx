@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   BuildDesc,
   BuildFileInfo,
@@ -41,6 +41,14 @@ type ModPanelProps = {
 }
 
 function ModPanel({ sel, sel_fam, setSel }: ModPanelProps) {
+  // if we only have one model (*cough tx1*), make it selected
+  // must be before conditional return because react
+  useEffect(() => {
+    if(sel_fam?.models.length === 1 && sel !== sel_fam.models[0].id) {
+      setSel(sel_fam.models[0].id)
+    }
+  }, [sel_fam,setSel])
+
   if(!sel_fam) {
     return null
   }
@@ -75,21 +83,48 @@ type FwPanelProps = {
 }
 
 function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
+  // if we only have one firmware, make it selected
+  // must be before conditional return because react
+  useEffect(() => {
+    if(sel_mod?.fw.length === 1 && sel_mod.fw[0].id !== sel) {
+      setSel(sel_mod.fw[0].id)
+    }
+  }, [sel_mod,setSel])
+
   if(!sel_mod) {
     return null
   }
+  const sel_fw = sel_mod.fw.find((fw: CamFirmware) => fw.id === sel)
+
   return (
     <div>
-      <h3 className="font-bold text-l my-1">Supported Canon Firmware</h3>
-      {sel_mod.fw.map((fw: CamFirmware) => (
-        <div
-          key={sel_mod.id + ' ' + fw.id}
-          className={"text-left block p-1 w-full even:bg-slate-50 odd:bg-sky-100"}>
-          {fw.id}
-          {' '}<a href={files_url+'/'+fw.full.file} className="underline">full</a>
-          {' '}<a href={files_url+'/'+fw.small.file} className="underline">small</a>
-        </div>
-      ))}
+      <h3 className="font-bold text-l my-1">Select Canon firmware version</h3>
+      <div className="flex w-full gap-1 flex-wrap">
+        {sel_mod.fw.map((fw: CamFirmware) => (
+          <button
+            onClick={() => setSel((fw.id === sel)?null:fw.id)}
+            key={fw.id}
+            className={"block border-solid border p-1 border-slate-300 rounded" + ((fw.id == sel)?' bg-slate-200':'')}>
+            {fw.id}
+          </button>
+        ))}
+      </div>
+      {sel_fw && (
+        <>
+          <div>
+            Complete: <a href={files_url+'/'+sel_fw.full.file} className="underline">{sel_fw.full.file}</a> (use this if not sure!)
+          </div>
+          <div>
+            sha256: {sel_fw.full.sha256}
+          </div>
+          <div>
+            Small: <a href={files_url+'/'+sel_fw.small.file} className="underline">{sel_fw.small.file}</a>
+          </div>
+          <div>
+            sha256: {sel_fw.small.sha256}
+          </div>
+        </>
+      )}
     </div>
   )
 
@@ -109,9 +144,9 @@ export default function BuildSelector({ build_info, base_url }: BuildSelectorPro
   const sel_mod = sel_fam?.models.find((mod: CamModel) => (mod.id === sel_mod_id))
   return (
     <div>
-      <FamPanel build_info={build_info} sel={sel_fam_id} setSel={setFam} />
+      <FamPanel build_info={build_info} sel={sel_fam_id} setSel={ (f) => { setMod(null); setFam(f) }} />
       <div className="flex gap-1">
-        <ModPanel sel={sel_mod_id} sel_fam={sel_fam} setSel={setMod} />
+        <ModPanel sel={sel_mod_id} sel_fam={sel_fam} setSel={ (s) => { setFw(null); setMod(s) }} />
         <FwPanel sel={sel_fw_id} sel_mod={sel_mod} setSel={setFw} files_url={base_url+build_info.files_path} />
       </div>
     </div>
