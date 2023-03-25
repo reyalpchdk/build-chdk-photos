@@ -47,7 +47,7 @@ function ModPanel({ sel, sel_fam, setSel }: ModPanelProps) {
     if(sel_fam?.models.length === 1 && sel !== sel_fam.models[0].id) {
       setSel(sel_fam.models[0].id)
     }
-  }, [sel_fam,setSel])
+  }, [sel_fam,setSel,sel])
 
   if(!sel_fam) {
     return null
@@ -89,7 +89,7 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
     if(sel_mod?.fw.length === 1 && sel_mod.fw[0].id !== sel) {
       setSel(sel_mod.fw[0].id)
     }
-  }, [sel_mod,setSel])
+  }, [sel_mod,setSel,sel])
 
   if(!sel_mod) {
     return null
