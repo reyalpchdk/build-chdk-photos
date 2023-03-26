@@ -3,6 +3,13 @@ import BuildSummary from '@/components/buildsummary'
 import BuildSelector from '@/components/buildselector'
 
 import {
+  SelId,
+  SelSetter
+} from '@/interfaces/buildctlprops';
+
+import BuildOptCtl from '@/components/buildoptctl'
+
+import {
   BuildInfo
 } from '@/interfaces/buildmeta';
 
@@ -30,7 +37,7 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
     return s
   },{}))
 
-  const [sel_branch, setBranch] = useState<string>(branches[0]);
+  const [sel_branch, setBranch] = useState<SelId>(null);
 
   useEffect(() => {
     branches.forEach( (bname) => {
@@ -60,28 +67,40 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
     });
   }, [branches, base_url, builds_path])
 
+  const branchStatusDesc = (bname:string) => {
+    if (data[bname].status === LoadStatus.LOADING) {
+      return `Loading ${bname}...`
+    }
+    if (data[bname].status === LoadStatus.ERROR) {
+      return `Error loading ${bname}`
+    }
+    if (data[bname].status === LoadStatus.LOADED) {
+      return data[bname].info.build.type_desc + ' ('+bname+')'
+    }
+  }
+
+  const opts = branches.map( (bname) => ({
+    id:bname,
+    label:branchStatusDesc(bname)
+  }))
+
   return (
     <>
       <div className="flex gap-1">
-      {branches.map((bname) => (
-        <div key={bname}>
-          <button
-            onClick={() => setBranch(bname)}
-            className={"block border-solid border p-1 w-full border-slate-300 rounded" + ((bname == sel_branch)?' bg-slate-200':'')}>
-            {data[bname].status === LoadStatus.LOADING && `Loading ${bname}...`}
-            {data[bname].status === LoadStatus.ERROR && `Error loading ${bname}`}
-            {data[bname].status === LoadStatus.LOADED && data[bname].info.build.type_desc}
-          </button>
-        </div>
-      ))}
+      <BuildOptCtl
+        title="Choose Branch"
+        opts={opts}
+        sel={sel_branch}
+        setSel={setBranch}
+      />
       </div>
-      {data[sel_branch]?.status === LoadStatus.LOADED && (
+      {sel_branch && data[sel_branch]?.status === LoadStatus.LOADED && (
         <div key={sel_branch} className="border border-slate-300 p-1 mt-1 rounded">
           <BuildSummary build_info={data[sel_branch].info} />
           <BuildSelector build_info={data[sel_branch].info} base_url={base_url} />
         </div>
       )}
-      {data[sel_branch]?.status === LoadStatus.ERROR && (
+      {sel_branch && data[sel_branch]?.status === LoadStatus.ERROR && (
         <div key={sel_branch} className="border border-slate-300 p-1 mt-1 rounded">
         {String(data[sel_branch].err)}
         </div>

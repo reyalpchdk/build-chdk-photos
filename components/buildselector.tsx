@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+
 import {
   BuildDesc,
   BuildFileInfo,
@@ -8,48 +9,13 @@ import {
   BuildInfo
 } from '@/interfaces/buildmeta';
 
-type SelId = string | null;
-type SelSetter = (a: SelId) => void;
+import {
+  SelId,
+  SelSetter
+} from '@/interfaces/buildctlprops';
 
-type BuildOpt = {
-    id:string;
-    label?:string;
-}
-type BuildOptListProps = {
-  title:string;
-  opts: BuildOpt[];
-  sel:SelId
-  setSel: SelSetter;
-}
-function BuildOptList({ title, opts, sel, setSel }: BuildOptListProps ) {
-  const sel_opt = opts.find( (opt) => opt.id == sel )
-  return (
-    <div className="min-w-[19em]">
-      <h3 className="font-bold text-l my-1">{title}</h3>
-      {sel_opt && (
-        <button
-          onClick={() => setSel(null)}
-          key={sel_opt.id}
-          className="text-left block p-1 w-full bg-sky-400 relative">
-         {sel_opt.label || sel_opt.id}
-         <span className="absolute right-1">&#10060;</span>
-        </button>
-      )}
-      {!sel_opt &&(
-        <div className="max-h-[50vh] overflow-y-auto">
-          {opts.map((opt: BuildOpt) => (
-            <button
-              onClick={() => setSel(opt.id)}
-              key={opt.id}
-              className={"text-left block p-1 w-full even:bg-slate-50 odd:bg-sky-100 hover:bg-sky-300"}>
-             {opt.label || opt.id}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
+import BuildOptCtl from '@/components/buildoptctl'
+
 
 type FamPanelProps = {
   build_info: BuildInfo;
@@ -64,7 +30,7 @@ function FamPanel({ build_info, sel, setSel }: FamPanelProps) {
     })
   )
   return (
-    <BuildOptList
+    <BuildOptCtl
       title="Model Family"
       opts={opts}
       sel={sel}
@@ -96,7 +62,7 @@ function ModPanel({ sel, sel_fam, setSel }: ModPanelProps) {
     })
   )
   return (
-    <BuildOptList
+    <BuildOptCtl
       title="Model"
       opts={opts}
       sel={sel}
@@ -131,7 +97,7 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
   )
   return (
     <>
-      <BuildOptList
+      <BuildOptCtl
         title="Canon Firmware Ver"
         opts={opts}
         sel={sel}

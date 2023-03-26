@@ -26,7 +26,8 @@ export default function Home() {
         <p>
         CHDK is an unofficial, unsupported third party firmware add-on for certain Canon point and shoot and EOS M cameras. CHDK is not supported by or affiliated with Canon. CHDK is provided as-is, with absolutely no warranty. Any use of CHDK is at the user&apos;s own risk.
         </p>
-        <h2 className="font-bold text-2xl my-2">Available builds</h2>
+        <h2 className="font-bold text-2xl my-2">Get CHDK</h2>
+        Use the tool below to specify your camera and Canon Firmware version
         <BranchSelector branches={['trunk','release']} base_url="https://build.chdk.photos" builds_path="/builds" />
       </main>
     </>
