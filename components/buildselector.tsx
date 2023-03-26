@@ -30,11 +30,13 @@ function FamPanel({ build_info, sel, setSel }: FamPanelProps) {
     })
   )
   return (
-    <BuildOptCtl
-      title="Model Family"
-      opts={opts}
-      sel={sel}
-      setSel={setSel} />
+    <div className="border border-slate-300 p-1 mt-1 rounded">
+      <BuildOptCtl
+        title="Model Family"
+        opts={opts}
+        sel={sel}
+        setSel={setSel} />
+    </div>
   )
 }
 
@@ -62,11 +64,13 @@ function ModPanel({ sel, sel_fam, setSel }: ModPanelProps) {
     })
   )
   return (
-    <BuildOptCtl
-      title="Model"
-      opts={opts}
-      sel={sel}
-      setSel={setSel} />
+    <div className="border border-slate-300 p-1 mt-1 rounded">
+      <BuildOptCtl
+        title="Model"
+        opts={opts}
+        sel={sel}
+        setSel={setSel} />
+    </div>
   )
 }
 
@@ -96,7 +100,7 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
     })
   )
   return (
-    <>
+    <div className="border border-slate-300 p-1 mt-1 rounded">
       <BuildOptCtl
         title="Canon Firmware Ver"
         opts={opts}
@@ -119,7 +123,7 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
             </div>
           </div>
         )}
-      </>
+    </div>
   )
 }
 
@@ -136,13 +140,11 @@ export default function BuildSelector({ build_info, base_url }: BuildSelectorPro
   const sel_fam = build_info.files.find((fam: CamFamily) => fam.id === sel_fam_id)
   const sel_mod = sel_fam?.models.find((mod: CamModel) => (mod.id === sel_mod_id))
   return (
-    <div>
-      <div className="flex flex-wrap gap-2">
-        <FamPanel build_info={build_info} sel={sel_fam_id} setSel={ (f) => { setMod(null); setFam(f) }} />
-        <ModPanel sel={sel_mod_id} sel_fam={sel_fam} setSel={ (s) => { setFw(null); setMod(s) }} />
-        <FwPanel sel={sel_fw_id} sel_mod={sel_mod} setSel={setFw} files_url={base_url+build_info.files_path} />
-      </div>
-    </div>
+    <>
+      <FamPanel build_info={build_info} sel={sel_fam_id} setSel={ (f) => { setMod(null); setFam(f) }} />
+      <ModPanel sel={sel_mod_id} sel_fam={sel_fam} setSel={ (s) => { setFw(null); setMod(s) }} />
+      <FwPanel sel={sel_fw_id} sel_mod={sel_mod} setSel={setFw} files_url={base_url+build_info.files_path} />
+    </>
   )
 }
 

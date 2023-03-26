@@ -85,27 +85,25 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
   }))
 
   return (
-    <>
-      <div className="flex gap-1">
-      <BuildOptCtl
-        title="Choose Branch"
-        opts={opts}
-        sel={sel_branch}
-        setSel={setBranch}
-      />
+    <div>
+      <div className="border border-slate-300 p-1 mt-1 rounded">
+        <BuildOptCtl
+          title="Choose Branch"
+          opts={opts}
+          sel={sel_branch}
+          setSel={setBranch}
+        />
+        {sel_branch && data[sel_branch]?.status === LoadStatus.LOADED && (
+          <BuildSummary build_info={data[sel_branch].info} />
+        )}
+        {sel_branch && data[sel_branch]?.status === LoadStatus.ERROR && (
+          <div>{String(data[sel_branch].err)}</div>
+        )}
       </div>
       {sel_branch && data[sel_branch]?.status === LoadStatus.LOADED && (
-        <div key={sel_branch} className="border border-slate-300 p-1 mt-1 rounded">
-          <BuildSummary build_info={data[sel_branch].info} />
-          <BuildSelector build_info={data[sel_branch].info} base_url={base_url} />
-        </div>
+        <BuildSelector build_info={data[sel_branch].info} base_url={base_url} />
       )}
-      {sel_branch && data[sel_branch]?.status === LoadStatus.ERROR && (
-        <div key={sel_branch} className="border border-slate-300 p-1 mt-1 rounded">
-        {String(data[sel_branch].err)}
-        </div>
-      )}
-    </>
+    </div>
   )
 }
 
