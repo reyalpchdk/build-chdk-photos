@@ -10,6 +10,46 @@ import {
 
 type SelId = string | null;
 type SelSetter = (a: SelId) => void;
+
+type BuildOpt = {
+    id:string;
+    label?:string;
+}
+type BuildOptListProps = {
+  title:string;
+  opts: BuildOpt[];
+  sel:SelId
+  setSel: SelSetter;
+}
+function BuildOptList({ title, opts, sel, setSel }: BuildOptListProps ) {
+  const sel_opt = opts.find( (opt) => opt.id == sel )
+  return (
+    <div className="min-w-[19em]">
+      <h3 className="font-bold text-l my-1">{title}</h3>
+      {sel_opt && (
+        <button
+          onClick={() => setSel(null)}
+          key={sel_opt.id}
+          className={"text-left block p-1 w-full bg-sky-400"}>
+         {sel_opt.label}
+        </button>
+      )}
+      {!sel_opt &&(
+        <div className="max-h-[50vh] overflow-y-auto">
+          {opts.map((opt: BuildOpt) => (
+            <button
+              onClick={() => setSel(opt.id)}
+              key={opt.id}
+              className={"text-left block p-1 w-full even:bg-slate-50 odd:bg-sky-100"}>
+             {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 type FamPanelProps = {
   build_info: BuildInfo;
   sel: SelId;
@@ -17,20 +57,17 @@ type FamPanelProps = {
 }
 
 function FamPanel({ build_info, sel, setSel }: FamPanelProps) {
+  const opts = build_info.files.map( (fam:CamFamily) => ({
+      id:fam.id,
+      label:fam.line + ' ' + fam.id
+    })
+  )
   return (
-    <>
-    <h3 className="font-bold text-l my-1">Select model family</h3>
-    <div className="flex w-full gap-1 flex-wrap">
-      {build_info.files.map((fam: CamFamily) => (
-        <button
-          onClick={() => setSel((fam.id === sel)?null:fam.id)}
-          key={fam.id}
-          className={"block border-solid border p-1 border-slate-300 rounded" + ((fam.id == sel)?' bg-slate-200':'')}>
-          {fam.line} {fam.id}
-        </button>
-      ))}
-    </div>
-    </>
+    <BuildOptList
+      title="Model Family"
+      opts={opts}
+      sel={sel}
+      setSel={setSel} />
   )
 }
 
@@ -52,26 +89,17 @@ function ModPanel({ sel, sel_fam, setSel }: ModPanelProps) {
   if(!sel_fam) {
     return null
   }
-  const bg_color = (id:SelId,sel:SelId) => {
-    if(id === sel) {
-      return 'bg-sky-400'
-    }
-    return 'even:bg-slate-50 odd:bg-sky-100'
-  }
+  const opts = sel_fam.models.map( (mod) => ({
+      id:mod.id,
+      label:(mod.desc || mod.id) + ((mod.aka)? " (" + mod.aka + ")":'')
+    })
+  )
   return (
-    <div className="min-w-[19em]">
-      <h3 className="font-bold text-l my-1">Select model</h3>
-      <div className="max-h-[50vh] overflow-y-auto">
-      {sel_fam?.models.map((mod: CamModel) => (
-        <button
-          onClick={() => setSel((mod.id === sel)?null:mod.id)}
-          key={mod.id}
-          className={"text-left block p-1 w-full " + bg_color(mod.id,sel)}>
-         {mod.desc || mod.id} {mod.aka && " (" + mod.aka + ")"}
-        </button>
-      ))}
-      </div>
-    </div>
+    <BuildOptList
+      title="Model"
+      opts={opts}
+      sel={sel}
+      setSel={setSel} />
   )
 }
 
@@ -96,38 +124,37 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
   }
   const sel_fw = sel_mod.fw.find((fw: CamFirmware) => fw.id === sel)
 
-  return (
-    <div>
-      <h3 className="font-bold text-l my-1">Select Canon firmware version</h3>
-      <div className="flex w-full gap-1 flex-wrap">
-        {sel_mod.fw.map((fw: CamFirmware) => (
-          <button
-            onClick={() => setSel((fw.id === sel)?null:fw.id)}
-            key={fw.id}
-            className={"block border-solid border p-1 border-slate-300 rounded" + ((fw.id == sel)?' bg-slate-200':'')}>
-            {fw.id}
-          </button>
-        ))}
-      </div>
-      {sel_fw && (
-        <>
-          <div>
-            Complete: <a href={files_url+'/'+sel_fw.full.file} className="underline">{sel_fw.full.file}</a> (use this if not sure!)
-          </div>
-          <div>
-            sha256: {sel_fw.full.sha256}
-          </div>
-          <div>
-            Small: <a href={files_url+'/'+sel_fw.small.file} className="underline">{sel_fw.small.file}</a>
-          </div>
-          <div>
-            sha256: {sel_fw.small.sha256}
-          </div>
-        </>
-      )}
-    </div>
+  const opts = sel_mod.fw.map( (fw) => ({
+      id:fw.id,
+      label:fw.id
+    })
   )
-
+  return (
+    <>
+      <BuildOptList
+        title="Canon Firmware Ver"
+        opts={opts}
+        sel={sel}
+        setSel={setSel} />
+        {sel_fw && (
+          <div>
+            <h3 className="font-bold text-l my-1">Downloads</h3>
+            <div>
+              Complete: <a href={files_url+'/'+sel_fw.full.file} className="underline">{sel_fw.full.file}</a> (use this if unsure!)
+            </div>
+            <div>
+              sha256: {sel_fw.full.sha256}
+            </div>
+            <div>
+              Small: <a href={files_url+'/'+sel_fw.small.file} className="underline">{sel_fw.small.file}</a>
+            </div>
+            <div>
+              sha256: {sel_fw.small.sha256}
+            </div>
+          </div>
+        )}
+      </>
+  )
 }
 
 type BuildSelectorProps = {
@@ -144,8 +171,8 @@ export default function BuildSelector({ build_info, base_url }: BuildSelectorPro
   const sel_mod = sel_fam?.models.find((mod: CamModel) => (mod.id === sel_mod_id))
   return (
     <div>
-      <FamPanel build_info={build_info} sel={sel_fam_id} setSel={ (f) => { setMod(null); setFam(f) }} />
-      <div className="flex gap-1">
+      <div className="flex flex-wrap gap-1">
+        <FamPanel build_info={build_info} sel={sel_fam_id} setSel={ (f) => { setMod(null); setFam(f) }} />
         <ModPanel sel={sel_mod_id} sel_fam={sel_fam} setSel={ (s) => { setFw(null); setMod(s) }} />
         <FwPanel sel={sel_fw_id} sel_mod={sel_mod} setSel={setFw} files_url={base_url+build_info.files_path} />
       </div>
