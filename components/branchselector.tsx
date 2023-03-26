@@ -21,7 +21,7 @@ enum LoadStatus {
 type BranchState = {
   info?: BuildInfo;
   status: LoadStatus;
-  errmsg?: string;
+  err?: any;
 }
 
 export default function BranchSelector({ branches, base_url, builds_path }: Props) {
@@ -39,7 +39,7 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
           (res) => res.json(),
           (err) => {
             console.log('error fetching data',bname,err)
-            setData((data:any) => ({...data,[bname]:{status:LoadStatus.ERROR, errmsg:err}}))
+            setData((data:any) => ({...data,[bname]:{status:LoadStatus.ERROR, err:err}}))
           }
         )
         .then(
@@ -54,7 +54,7 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
           },
           (err) => {
             console.log('error parsing data',bname,err)
-            setData((data:any) => ({...data,[bname]:{status:LoadStatus.ERROR, errmsg:err}}))
+            setData((data:any) => ({...data,[bname]:{status:LoadStatus.ERROR, err:err}}))
           }
         )
     });
@@ -63,30 +63,29 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
   return (
     <>
       <div className="flex gap-1">
-        {branches.map((bname) => (
+      {branches.map((bname) => (
         <div key={bname}>
-        {data[bname].status === LoadStatus.LOADING && `loading ${bname}...`}
-        {data[bname].status === LoadStatus.ERROR && `error loading ${bname}`}
-        {data[bname].status === LoadStatus.LOADED && (
           <button
             onClick={() => setBranch(bname)}
             className={"block border-solid border p-1 w-full border-slate-300 rounded" + ((bname == sel_branch)?' bg-slate-200':'')}>
-            {data[bname].info.build.type_desc}
+            {data[bname].status === LoadStatus.LOADING && `Loading ${bname}...`}
+            {data[bname].status === LoadStatus.ERROR && `Error loading ${bname}`}
+            {data[bname].status === LoadStatus.LOADED && data[bname].info.build.type_desc}
           </button>
-        )}
         </div>
-        ))}
-      </div>
-      {branches.map((bname) => (
-        (bname === sel_branch && data[bname].status === LoadStatus.LOADED) && (
-        <div key={bname} className="border border-slate-300 p-1 mt-1 rounded">
-          <>
-          <BuildSummary build_info={data[bname].info} />
-          <BuildSelector build_info={data[bname].info} base_url={base_url} />
-          </>
-        </div>
-        )
       ))}
+      </div>
+      {data[sel_branch]?.status === LoadStatus.LOADED && (
+        <div key={sel_branch} className="border border-slate-300 p-1 mt-1 rounded">
+          <BuildSummary build_info={data[sel_branch].info} />
+          <BuildSelector build_info={data[sel_branch].info} base_url={base_url} />
+        </div>
+      )}
+      {data[sel_branch]?.status === LoadStatus.ERROR && (
+        <div key={sel_branch} className="border border-slate-300 p-1 mt-1 rounded">
+        {String(data[sel_branch].err)}
+        </div>
+      )}
     </>
   )
 }
