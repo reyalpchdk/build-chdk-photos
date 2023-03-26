@@ -21,6 +21,7 @@ enum LoadStatus {
 type BranchState = {
   info?: BuildInfo;
   status: LoadStatus;
+  errmsg?: string;
 }
 
 export default function BranchSelector({ branches, base_url, builds_path }: Props) {
@@ -34,10 +35,28 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
   useEffect(() => {
     branches.forEach( (bname) => {
       fetch(base_url+builds_path+'/'+bname+'/meta/build_info.json')
-        .then((res) => res.json())
-        .then((binfo) => {
-          setData((data:any) => ({...data,[bname]:{info:binfo, status:LoadStatus.LOADED }}))
-        })
+        .then(
+          (res) => res.json(),
+          (err) => {
+            console.log('error fetching data',bname,err)
+            setData((data:any) => ({...data,[bname]:{status:LoadStatus.ERROR, errmsg:err}}))
+          }
+        )
+        .then(
+          (binfo) => {
+            setData((data:any) => {
+              if(data[bname]?.status === LoadStatus.LOADING) {
+                return {...data,[bname]:{info:binfo, status:LoadStatus.LOADED }}
+              } else {
+                return data
+              }
+            })
+          },
+          (err) => {
+            console.log('error parsing data',bname,err)
+            setData((data:any) => ({...data,[bname]:{status:LoadStatus.ERROR, errmsg:err}}))
+          }
+        )
     });
   }, [branches, base_url, builds_path])
 

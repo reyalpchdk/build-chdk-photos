@@ -20,7 +20,7 @@ export default function Home() {
       <main className="p-10">
         <h1 className="font-bold text-2xl mb-2">CHDK Autobuild</h1>
         <p>
-        This server provides builds of CHDK, updated withing roughly one hour of changes being made.
+        This page provides builds of CHDK, updated withing roughly one hour of changes being made.
         </p>
         <h2 className="font-bold text-2xl my-2">What is CHDK</h2>
         <p>
