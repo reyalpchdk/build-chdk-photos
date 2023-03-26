@@ -30,8 +30,9 @@ function BuildOptList({ title, opts, sel, setSel }: BuildOptListProps ) {
         <button
           onClick={() => setSel(null)}
           key={sel_opt.id}
-          className={"text-left block p-1 w-full bg-sky-400"}>
-         {sel_opt.label}
+          className="text-left block p-1 w-full bg-sky-400 relative">
+         {sel_opt.label || sel_opt.id}
+         <span className="absolute right-1">&#10060;</span>
         </button>
       )}
       {!sel_opt &&(
@@ -40,8 +41,8 @@ function BuildOptList({ title, opts, sel, setSel }: BuildOptListProps ) {
             <button
               onClick={() => setSel(opt.id)}
               key={opt.id}
-              className={"text-left block p-1 w-full even:bg-slate-50 odd:bg-sky-100"}>
-             {opt.label}
+              className={"text-left block p-1 w-full even:bg-slate-50 odd:bg-sky-100 hover:bg-sky-300"}>
+             {opt.label || opt.id}
             </button>
           ))}
         </div>
@@ -126,7 +127,6 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
 
   const opts = sel_mod.fw.map( (fw) => ({
       id:fw.id,
-      label:fw.id
     })
   )
   return (
@@ -171,7 +171,7 @@ export default function BuildSelector({ build_info, base_url }: BuildSelectorPro
   const sel_mod = sel_fam?.models.find((mod: CamModel) => (mod.id === sel_mod_id))
   return (
     <div>
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-2">
         <FamPanel build_info={build_info} sel={sel_fam_id} setSel={ (f) => { setMod(null); setFam(f) }} />
         <ModPanel sel={sel_mod_id} sel_fam={sel_fam} setSel={ (s) => { setFw(null); setMod(s) }} />
         <FwPanel sel={sel_fw_id} sel_mod={sel_mod} setSel={setFw} files_url={base_url+build_info.files_path} />
