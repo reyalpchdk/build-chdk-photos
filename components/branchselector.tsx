@@ -39,22 +39,22 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
           (res) => res.json(),
           (err) => {
             console.log('error fetching data',bname,err)
-            setData((data:any) => ({...data,[bname]:{status:LoadStatus.ERROR, err:err}}))
+            setData((prevdata:any) => ({...prevdata,[bname]:{status:LoadStatus.ERROR, err:err}}))
           }
         )
         .then(
           (binfo) => {
-            setData((data:any) => {
-              if(data[bname]?.status === LoadStatus.LOADING) {
-                return {...data,[bname]:{info:binfo, status:LoadStatus.LOADED }}
+            setData((prevdata:any) => {
+              if(prevdata[bname]?.status === LoadStatus.LOADING) {
+                return {...prevdata,[bname]:{info:binfo, status:LoadStatus.LOADED }}
               } else {
-                return data
+                return prevdata
               }
             })
           },
           (err) => {
             console.log('error parsing data',bname,err)
-            setData((data:any) => ({...data,[bname]:{status:LoadStatus.ERROR, err:err}}))
+            setData((prevdata:any) => ({...prevdata,[bname]:{status:LoadStatus.ERROR, err:err}}))
           }
         )
     });
