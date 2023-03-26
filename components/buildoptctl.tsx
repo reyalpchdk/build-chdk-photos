@@ -21,10 +21,9 @@ export default function BuildOptCtl({ title, opts, sel, setSel }: BuildOptCtlPro
       {sel_opt && (
         <button
           onClick={() => setSel(null)}
-          key={sel_opt.id}
-          className="text-left block p-1 w-full bg-sky-400 relative">
+          className="text-left block p-1 w-full bg-sky-400 relative group">
          {sel_opt.label || sel_opt.id}
-         <span className="absolute right-1">&#10060;</span>
+         <span className="absolute right-0 top-0 text-2xl right-2 group-hover:scale-110 font-bold text-red-500 leading-none">&#10226;</span>
         </button>
       )}
       {!sel_opt &&(
