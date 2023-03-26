@@ -10,7 +10,7 @@ type BuildOpt = {
 type BuildOptCtlProps = {
   title:string;
   opts: BuildOpt[];
-  sel:SelId
+  sel: SelId;
   setSel: SelSetter;
 }
 export default function BuildOptCtl({ title, opts, sel, setSel }: BuildOptCtlProps ) {
