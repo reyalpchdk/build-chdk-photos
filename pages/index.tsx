@@ -14,12 +14,12 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <SiteHeader />
-      <div className="flex items-start gap-4 flex-wrap md:flex-nowrap mx-auto max-w-6xl px-5 sm:px-6 xl:px-8 pb-5">
+      <div className="flex items-start gap-4 flex-wrap md:flex-nowrap mx-auto max-w-6xl px-1 sm:px-6 xl:px-8 pb-5">
         <LinksPanel />
         <main>
           <h1 className="font-bold text-2xl">About this Autobuild</h1>
           <p className="my-2">
-          This page provides builds of CHDK, updated within roughly an hour of commits in the source. This autobuild is maintained by a member the CHDK development team known as <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/User:ReyalP">reyalP</a>. Problems with this site may be reported on the <a className="underline hover:text-chdk-red2" href="https://chdk.setepontos.com/index.php">forum</a> or by emailing reyalp at gmail dot com.
+          This page provides builds of CHDK, updated within roughly an hour of commits in the source. This autobuild is maintained by CHDK development  member <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/User:ReyalP">reyalP</a>. Problems with this site may be reported on the <a className="underline hover:text-chdk-red2" href="https://chdk.setepontos.com/index.php">forum</a> or by emailing reyalp at gmail dot com.
           </p>
           <h2 className="font-bold text-2xl">About CHDK</h2>
           <p className="my-2">
