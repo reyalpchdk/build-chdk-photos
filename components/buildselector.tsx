@@ -110,13 +110,13 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
           <div>
             <h3 className="font-bold text-l my-1">Downloads</h3>
             <div>
-              Complete: <a href={files_url+'/'+sel_fw.full.file} className="underline">{sel_fw.full.file}</a> (use this if unsure!)
+              Complete: <a href={files_url+'/'+sel_fw.full.file} className="underline hover:text-chdk-red2">{sel_fw.full.file}</a> (use this if unsure!)
             </div>
             <div>
               sha256: {sel_fw.full.sha256}
             </div>
             <div>
-              Small: <a href={files_url+'/'+sel_fw.small.file} className="underline">{sel_fw.small.file}</a>
+              Small: <a href={files_url+'/'+sel_fw.small.file} className="underline hover:text-chdk-red2">{sel_fw.small.file}</a>
             </div>
             <div>
               sha256: {sel_fw.small.sha256}
