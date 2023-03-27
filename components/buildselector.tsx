@@ -102,7 +102,7 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
   return (
     <div className="border border-slate-300 p-1 mt-1 rounded">
       <BuildOptCtl
-        title="Canon Firmware Ver"
+        title="Canon Firmware Version"
         opts={opts}
         sel={sel}
         setSel={setSel} />
@@ -112,16 +112,21 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
             <div>
               Complete: <a href={files_url+'/'+sel_fw.full.file} className="underline hover:text-chdk-red2">{sel_fw.full.file}</a> (use this if unsure!)
             </div>
-            <div>
+            <div className="break-all w-full">
               sha256: {sel_fw.full.sha256}
             </div>
             <div>
-              Small: <a href={files_url+'/'+sel_fw.small.file} className="underline hover:text-chdk-red2">{sel_fw.small.file}</a>
+              Small: <a href={files_url+'/'+sel_fw.small.file} className="underline hover:text-chdk-red2">{sel_fw.small.file}</a> (<b>only</b> suitable for updating an existing install of a similar version)
             </div>
-            <div>
+            <div className="break-all w-full">
               sha256: {sel_fw.small.sha256}
             </div>
           </div>
+        )}
+        {!sel_fw && (
+          <p className="my-2">
+A CHDK build must match the version of the Canon firmware installed on the camera. See the <a href="https://chdk.fandom.com/wiki/FAQ#Q._How_can_I_get_the_original_firmware_version_number_of_my_camera?" className="underline hover:text-chdk-red2">FAQ</a> for more information.
+          </p>
         )}
     </div>
   )

@@ -99,6 +99,16 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
         {sel_branch && data[sel_branch]?.status === LoadStatus.ERROR && (
           <div>{String(data[sel_branch].err)}</div>
         )}
+        {!sel_branch && (
+          <>
+            <p className="my-2">
+The <i>development</i> branch may contain features under active development, and is considered <i>unstable</i>. The <i>release</i> branch is a released version which is generally only updated for bug fixes, and is considered <i>stable</i>. Note however that <i>stable</i> here mostly refers to features and interfaces, not the likelihood of encountering crashes or bugs.
+            </p>
+            <p className="my-2">
+The development branch may include ports for models not present in the stable branch.
+            </p>
+          </>
+        )}
       </div>
       {sel_branch && data[sel_branch]?.status === LoadStatus.LOADED && (
         <BuildSelector build_info={data[sel_branch].info} base_url={base_url} />

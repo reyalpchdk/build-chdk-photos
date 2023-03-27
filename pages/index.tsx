@@ -14,19 +14,21 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <SiteHeader />
-      <div className="flex items-start gap-4 flex-wrap md:flex-nowrap mx-auto max-w-6xl px-5 sm:px-6 xl:px-8">
+      <div className="flex items-start gap-4 flex-wrap md:flex-nowrap mx-auto max-w-6xl px-5 sm:px-6 xl:px-8 pb-5">
         <LinksPanel />
         <main>
-          <h1 className="font-bold text-2xl mb-2">Autobuild</h1>
-          <p>
-          This page provides builds of CHDK, updated withing roughly one hour of changes being made.
+          <h1 className="font-bold text-2xl">About this Autobuild</h1>
+          <p className="my-2">
+          This page provides builds of CHDK, updated within roughly an hour of commits in the source. This autobuild is maintained by a member the CHDK development team known as <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/User:ReyalP">reyalP</a>. Problems with this site may be reported on the <a className="underline hover:text-chdk-red2" href="https://chdk.setepontos.com/index.php">forum</a> or by emailing reyalp at gmail dot com.
           </p>
-          <h2 className="font-bold text-2xl my-2">What is CHDK</h2>
-          <p>
-          CHDK is an open source, unofficial, unsupported third party firmware add-on for certain Canon point and shoot and EOS M cameras. CHDK is not supported by or affiliated with Canon. CHDK is provided as-is, with absolutely no warranty. Any use of CHDK is at the user&apos;s own risk.
+          <h2 className="font-bold text-2xl">About CHDK</h2>
+          <p className="my-2">
+          CHDK is an open source, unofficial, unsupported third party firmware add-on for certain Canon point and shoot and EOS M cameras. CHDK is not supported by or affiliated with Canon. All references to Canon trademarks on these pages are used solely to help identify the products in question. <b>CHDK is provided as-is, with absolutely no warranty. All use of CHDK is at the user&apos;s own risk.</b> See <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/CHDK">the wiki</a> for more information. Please use the <a className="underline hover:text-chdk-red2" href="https://chdk.setepontos.com/index.php">CHDK forum</a> to report CHDK bugs.
           </p>
-          <h2 className="font-bold text-2xl my-2">Get CHDK</h2>
-          Use the tool below to specify your camera and Canon Firmware version
+          <h2 className="font-bold text-2xl">Get CHDK</h2>
+          <p className="my-2">
+          To find a CHDK build, start by selecting a branch below.
+          </p>
           <BranchSelector branches={['trunk','release']} base_url="https://build.chdk.photos" builds_path="/builds" />
         </main>
       </div>
