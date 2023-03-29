@@ -29,7 +29,10 @@ export default function Home() {
           <p className="my-2">
           To find a CHDK build, start by selecting a branch below.
           </p>
-          <BranchSelector branches={['trunk','release']} base_url="https://build.chdk.photos" builds_path="/builds" />
+          <BranchSelector
+            branches={['trunk','release']}
+            base_url={process.env.NEXT_PUBLIC_SITE_ROOT || ''}
+            builds_path={process.env.NEXT_PUBLIC_BUILDS_DIR || "/builds"} />
         </main>
       </div>
     </>
