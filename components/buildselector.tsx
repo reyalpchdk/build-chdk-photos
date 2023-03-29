@@ -26,7 +26,7 @@ type FamPanelProps = {
 function FamPanel({ build_info, sel, setSel }: FamPanelProps) {
   const opts = build_info.files.map( (fam:CamFamily) => ({
       id:fam.id,
-      label:fam.line + ' ' + fam.id
+      label:fam.line + ' ' + fam.id + (fam.aka?' ('+fam.aka+')':'')
     })
   )
   return (
