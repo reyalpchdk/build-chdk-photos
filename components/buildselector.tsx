@@ -108,18 +108,23 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
         setSel={setSel} />
         {sel_fw && (
           <div>
-            <h3 className="font-bold text-l my-1">Downloads</h3>
+            <h3 className="font-bold text-l my-1">Complete build</h3>
             <div>
-              Complete: <a href={files_url+'/'+sel_fw.full.file} className="underline hover:text-chdk-red2">{sel_fw.full.file}</a> (use this if unsure!)
+              <a href={files_url+'/'+sel_fw.full.file} className="underline hover:text-chdk-red2">Download {sel_fw.full.file}</a> {sel_fw.full.size && (<span>({(sel_fw.full.size/1024).toFixed()} KB)</span>)}
             </div>
             <div className="break-all w-full">
               sha256: {sel_fw.full.sha256}
             </div>
+            <div className="border-b border-slate-300 my-2"></div>
+            <h3 className="font-bold text-l my-1">Small update build</h3>
             <div>
-              Small: <a href={files_url+'/'+sel_fw.small.file} className="underline hover:text-chdk-red2">{sel_fw.small.file}</a> (<b>only</b> suitable for updating an existing install of a similar version)
+              <a href={files_url+'/'+sel_fw.small.file} className="underline hover:text-chdk-red2">Download {sel_fw.small.file}</a> {sel_fw.small.size && (<span>({(sel_fw.small.size/1024).toFixed()} KB)</span>)}
             </div>
             <div className="break-all w-full">
               sha256: {sel_fw.small.sha256}
+            </div>
+            <div className="my-1">
+              NOTE: The small file is <b>only</b> suitable for updating an existing install of a similar version. Use the complete build if unsure.
             </div>
           </div>
         )}

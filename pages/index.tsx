@@ -19,11 +19,11 @@ export default function Home() {
         <main>
           <h1 className="font-bold text-2xl">About this Autobuild</h1>
           <p className="my-2">
-          This page provides builds of CHDK, updated within roughly an hour of commits in the source. This autobuild is maintained by CHDK development  member <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/User:ReyalP">reyalP</a>. Problems with this site may be reported on the <a className="underline hover:text-chdk-red2" href="https://chdk.setepontos.com/index.php">forum</a> or by emailing reyalp at gmail dot com.
+          This page provides builds of CHDK, updated within roughly an hour of commits in the source. This autobuild is maintained by CHDK development team member <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/User:ReyalP">reyalP</a>. Problems with this site may be reported on the <a className="underline hover:text-chdk-red2" href="https://chdk.setepontos.com/index.php">forum</a> or by emailing reyalp at gmail dot com.
           </p>
           <h2 className="font-bold text-2xl">About CHDK</h2>
           <p className="my-2">
-          CHDK is an open source, unofficial, unsupported third party firmware add-on for certain Canon point and shoot and EOS M cameras. CHDK is not supported by or affiliated with Canon. All references to Canon trademarks on these pages are used solely to help identify the products in question. <b>CHDK is provided as-is, with absolutely no warranty. All use of CHDK is at the user&apos;s own risk.</b> See <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/CHDK">the wiki</a> for more information. Please use the <a className="underline hover:text-chdk-red2" href="https://chdk.setepontos.com/index.php">CHDK forum</a> to report CHDK bugs.
+          CHDK is an open source, unofficial, unsupported third party firmware add-on for certain Canon point and shoot and EOS M cameras. CHDK is not supported by or affiliated with Canon. All references to Canon trademarks on these pages are used solely to help identify the products in question. <b>CHDK is provided as-is, with absolutely no warranty. All use of CHDK is at the user&apos;s own risk.</b> See the <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/CHDK">CHDK wiki</a> for more information. Please use the <a className="underline hover:text-chdk-red2" href="https://chdk.setepontos.com/index.php">CHDK forum</a> to report CHDK bugs.
           </p>
           <h2 className="font-bold text-2xl">Get CHDK</h2>
           <p className="my-2">

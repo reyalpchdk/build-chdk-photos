@@ -21,6 +21,7 @@ export type BuildStatus = {
 export type BuildFileInfo = {
   file: string;
   sha256: string;
+  size: number;
 }
 
 export type CamFirmware = {
@@ -41,6 +42,7 @@ export type CamModel = {
 export type CamFamily = {
   id: string;
   line: string;
+  aka?: string;
   models: CamModel[];
 }
 
