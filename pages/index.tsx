@@ -36,7 +36,7 @@ export default function Home() {
         <main>
           <h1 className="font-bold text-2xl">About this Autobuild</h1>
           <p className="my-2">
-          This page provides builds of <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/CHDK">CHDK</a>, updated within roughly an hour of commits in the source. This autobuild is maintained by CHDK development team member <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/User:ReyalP">reyalP</a>. Problems with this site may be reported on the <a className="underline hover:text-chdk-red2" href="https://chdk.setepontos.com/index.php">forum</a> or by emailing reyalp at gmail dot com.
+          This site provides builds of <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/CHDK">CHDK</a>, updated within roughly an hour of commits in the source. This autobuild is maintained by CHDK development team member <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/User:ReyalP">reyalP</a>. Problems with this site may be reported on the <a className="underline hover:text-chdk-red2" href="https://chdk.setepontos.com/index.php">forum</a> or by emailing reyalp at gmail dot com. Source for this site is available on <a className="underline hover:text-chdk-red2" href="https://github.com/reyalpchdk/build-chdk-photos">github</a>.
           </p>
           <h2 className="font-bold text-2xl">About CHDK</h2>
           <p className="my-2">
