@@ -41,12 +41,13 @@ function FamPanel({ build_info, sel, setSel }: FamPanelProps) {
 }
 
 type ModPanelProps = {
+  svn_root:string;
   sel: SelId;
   sel_fam?: CamFamily;
   setSel: SelSetter;
 }
 
-function ModPanel({ sel, sel_fam, setSel }: ModPanelProps) {
+function ModPanel({ svn_root, sel, sel_fam, setSel }: ModPanelProps) {
   // if we only have one model (*cough tx1*), make it selected
   // must be before conditional return because react
   useEffect(() => {
@@ -63,6 +64,7 @@ function ModPanel({ sel, sel_fam, setSel }: ModPanelProps) {
       label:(mod.desc || mod.id) + ((mod.aka)? " (" + mod.aka + ")":'')
     })
   )
+  const sel_mod = sel_fam.models.find((mod: CamModel) => mod.id === sel)
   return (
     <div className="border border-slate-300 p-1 mt-1 rounded">
       <BuildOptCtl
@@ -70,6 +72,9 @@ function ModPanel({ sel, sel_fam, setSel }: ModPanelProps) {
         opts={opts}
         sel={sel}
         setSel={setSel} />
+      {sel_mod && (
+        <a target="_blank" href={svn_root + '/platform/'+sel_mod.id+'/notes.txt'} className="block underline hover:text-chdk-red2 my-2">Model notes</a>
+      )}
     </div>
   )
 }
@@ -124,7 +129,7 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
               sha256: {sel_fw.small.sha256}
             </div>
             <div className="my-1">
-              NOTE: The small file is <b>only</b> suitable for updating an existing install of a similar version. Use the complete build if unsure.
+              NOTE: Small file is <b>only</b> suitable for updating an existing install of a similar version. Use the complete build if unsure.
             </div>
           </div>
         )}
@@ -151,9 +156,20 @@ export default function BuildSelector({ build_info, base_url }: BuildSelectorPro
   const sel_mod = sel_fam?.models.find((mod: CamModel) => (mod.id === sel_mod_id))
   return (
     <>
-      <FamPanel build_info={build_info} sel={sel_fam_id} setSel={ (f) => { setMod(null); setFam(f) }} />
-      <ModPanel sel={sel_mod_id} sel_fam={sel_fam} setSel={ (s) => { setFw(null); setMod(s) }} />
-      <FwPanel sel={sel_fw_id} sel_mod={sel_mod} setSel={setFw} files_url={base_url+build_info.files_path} />
+      <FamPanel
+        build_info={build_info}
+        sel={sel_fam_id}
+        setSel={ (f) => { setMod(null); setFam(f) }} />
+      <ModPanel
+        svn_root={build_info.build.svn}
+        sel={sel_mod_id}
+        sel_fam={sel_fam}
+        setSel={ (s) => { setFw(null); setMod(s) }} />
+      <FwPanel
+        sel={sel_fw_id}
+        sel_mod={sel_mod}
+        setSel={setFw}
+        files_url={base_url+build_info.files_path} />
     </>
   )
 }
