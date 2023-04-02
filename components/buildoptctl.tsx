@@ -18,7 +18,7 @@ export default function BuildOptCtl({ title, opts, sel, setSel }: BuildOptCtlPro
   return (
     <div className="min-w-[19em]">
       <h3 className="font-bold text-l my-1">{title}</h3>
-      {sel_opt && (
+      {sel_opt && opts.length > 1  && (
         <button
           onClick={() => setSel(null)}
           className="text-left block p-1 w-full bg-sky-400 relative group">
@@ -26,7 +26,13 @@ export default function BuildOptCtl({ title, opts, sel, setSel }: BuildOptCtlPro
          <span className="absolute right-0 top-0 text-2xl right-2 group-hover:scale-110 font-bold text-red-500 leading-none">&#10226;</span>
         </button>
       )}
-      {!sel_opt &&(
+      {sel_opt && opts.length == 1  && (
+        <div
+          className="text-left block p-1 w-full bg-slate-300 relative">
+         {sel_opt.label || sel_opt.id}
+        </div>
+      )}
+      {!sel_opt && (
         <div className="max-h-[50vh] overflow-y-auto">
           {opts.map((opt: BuildOpt) => (
             <button

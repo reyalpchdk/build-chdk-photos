@@ -14,9 +14,9 @@ export default function SvnLog({ build_info }: SvnLogProps) {
 
   return (
     <div>
-      <button onClick={() => setExpand(!expand)} className="relative pr-4">
+      <button onClick={() => setExpand(!expand)} className="relative pr-6">
         Recent changes
-        <span className="absolute right-0 top-0 text-l">{expand?'\u00D7':'\uFF0B'}</span>
+        <span className="absolute right-0 top-0 text-2xl leading-none">{expand?'\u00D7':'\uFF0B'}</span>
       </button>
       {expand && build_info.svnlog.map( (revlog) => (
         <div key={revlog.revision}
