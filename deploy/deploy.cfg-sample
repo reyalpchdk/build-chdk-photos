@@ -1,0 +1,18 @@
+# below are settings which may be set deploy.cfg
+# which is sourced by deploy.bash
+# values may also be set in the environment
+# the following must be set
+AUTOBUILD_BUCKET=some-bucket-name
+AUTOBUILD_DIST=some-cloudfront-distribution-id
+
+# The following additional values may be set (defaults below)
+# cache-control max-age for html files
+#AUTOBUILD_HTML_MAXAGE=300
+# max-age for image files outside the next directory (currently just favicon.ico)
+#AUTOBUILD_IMG_MAXAGE=3600
+# max-age for files in the _next directly
+# all should be uniquely named so long values are appropriate
+#AUTOBUILD_NEXT_MAXAGE=86400
+# should immutable be added to next cache control?
+# set to 0 to disable
+#AUTOBUILD_NEXT_IMMUTABLE=1
