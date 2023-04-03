@@ -39,4 +39,4 @@ To create a static build, run
 Output goes to `out`.
 
 ## Deploying
-Copy everything under `out` to the host.
+Copy everything under `out` to the host. A script to deploy to AWS can be found in the `deploy` directory.
