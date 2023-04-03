@@ -20,6 +20,7 @@ usage:
 options:
   -dryrun: run commands with --dryrun
   -cfg=<file>: use file for cfg instead of "$selfdir/deploy.cfg"
+  -nodelete: do not delete obsolete files in _next
 
 EOF
 	exit 1
@@ -42,6 +43,7 @@ dryrun=""
 selfdir="$(dirname "$(readlink -f "$0")")"
 rootdir="$(dirname "$selfdir")"
 cfgfile="$selfdir"/deploy.cfg
+dodelete="--delete"
 
 while [ ! -z "$arg" ] ; do
 	case $arg in
@@ -50,6 +52,9 @@ while [ ! -z "$arg" ] ; do
 	;;
 	-cfg=*)
 		cfgfile="${arg#-cfg=}"
+	;;
+	-nodelete)
+		dodelete=""
 	;;
 	*)
 		usage "unknown option $arg"
@@ -100,7 +105,7 @@ fi
 
 s3_cmd cp . s3://"$AUTOBUILD_BUCKET"/ --recursive --exclude "*" --include "*.html" --cache-control "max-age=$AUTOBUILD_HTML_MAXAGE" $dryrun
 s3_cmd cp favicon.ico s3://"$AUTOBUILD_BUCKET"/ --cache-control "max-age=$AUTOBUILD_IMG_MAXAGE" $dryrun
-s3_cmd sync _next s3://"$AUTOBUILD_BUCKET"/_next --cache-control "$next_cache_control" $dryrun
+s3_cmd sync _next s3://"$AUTOBUILD_BUCKET"/_next --cache-control "$next_cache_control" $dodelete $dryrun
 
 # we should technically only need to invalidate the html files
 # but patterns are limited
