@@ -151,7 +151,7 @@ function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
         )}
         {!sel_fw && (
           <p className="my-2">
-A CHDK build must match the version of the Canon firmware installed on the camera. See the <a href="https://chdk.fandom.com/wiki/FAQ#Q._How_can_I_get_the_original_firmware_version_number_of_my_camera?" className="underline hover:text-chdk-red2">FAQ</a> for more information.
+A CHDK build must match the version of the Canon firmware installed on the camera. See the <a target="_blank" href="https://chdk.fandom.com/wiki/FAQ#Q._How_can_I_get_the_original_firmware_version_number_of_my_camera?" className="underline hover:text-chdk-red2">FAQ</a> for more information.
           </p>
         )}
     </div>
