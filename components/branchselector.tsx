@@ -123,6 +123,9 @@ The <i>development</i> branch may contain features under active development, and
             <p className="my-2">
 The development branch may include ports for models not present in the stable branch.
             </p>
+            <p className="my-2">
+See the <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.com/wiki/Releases" target="_blank">releases</a> wiki page for information about significant changes in CHDK releases.
+            </p>
           </>
         )}
       </div>
