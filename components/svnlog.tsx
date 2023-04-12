@@ -37,13 +37,18 @@ export default function SvnLog({ build_info }: SvnLogProps) {
       {expand && build_info.svnlog.map( (revlog) => (
         <div key={revlog.revision}
           className="bg-sky-100">
-          <a className="underline hover:text-chdk-red2" href={revlog.svn}>{revlog.revision}</a>
+          <a target="_blank" className="underline hover:text-chdk-red2" href={revlog.svn}>{revlog.revision}</a>
           {' '}- {revlog.author} - {new Date(revlog.utc).toLocaleString()} ({new Date(revlog.utc).toUTCString()})
           {revlog.msg.map((msg) => (
             <div className="bg-slate-50" key={msg}>{msg}</div>
           ))}
         </div>
       ))}
+      {(expand && build_info.svnlog.length) && (
+        <div>
+          <a target="_blank" className="underline hover:text-chdk-red2" href={build_info.svnlog[0].svn.replace(/\/\d+$/,'/list')}>Full log</a> (all branches)
+        </div>
+      )}
     </div>
   )
 }
