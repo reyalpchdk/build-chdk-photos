@@ -26,21 +26,24 @@ import {
 } from '@/interfaces/buildmeta';
 
 import {
-  SelId,
-  SelSetter
-} from '@/interfaces/buildctlprops';
+  BuildSelection,
+} from '@/interfaces/buildselection';
+
+import {
+  makePathStr
+} from '@/lib/buildselection';
 
 import BuildOptCtl from '@/components/buildoptctl'
 
+type PathSetter = (a: string|null) => void
 
 type FamPanelProps = {
-  build_info: BuildInfo;
-  sel: SelId;
-  setSel: SelSetter;
+  sel_info: BuildSelection;
+  setPath: PathSetter
 }
 
-function FamPanel({ build_info, sel, setSel }: FamPanelProps) {
-  const opts = build_info.files.map( (fam:CamFamily) => ({
+function FamPanel({ sel_info, setPath }: FamPanelProps) {
+  const opts = sel_info.branch?.info?.files.map( (fam:CamFamily) => ({
       id:fam.id,
       label:fam.line + ' ' + fam.id + (fam.aka?' ('+fam.aka+')':'')
     })
@@ -50,106 +53,103 @@ function FamPanel({ build_info, sel, setSel }: FamPanelProps) {
       <BuildOptCtl
         title="Model Family"
         opts={opts}
-        sel={sel}
-        setSel={setSel} />
+        sel={sel_info.path[1]}
+        setSel={(id)=>{setPath(makePathStr(sel_info.path,1,id))}} />
     </div>
   )
 }
 
 type ModPanelProps = {
-  svn_root:string;
-  sel: SelId;
-  sel_fam?: CamFamily;
-  setSel: SelSetter;
+  sel_info: BuildSelection;
+  setPath: PathSetter;
 }
 
-function ModPanel({ svn_root, sel, sel_fam, setSel }: ModPanelProps) {
+function ModPanel({ sel_info, setPath }: ModPanelProps) {
   // if we only have one model (*cough tx1*), make it selected
   // must be before conditional return because react
   useEffect(() => {
-    if(sel_fam?.models.length === 1 && sel !== sel_fam.models[0].id) {
-      setSel(sel_fam.models[0].id)
+    if(sel_info.family?.models.length === 1 && !sel_info.model) {
+      setPath(makePathStr(sel_info.path,2,sel_info.family.models[0].id))
     }
-  }, [sel_fam,setSel,sel])
+  }, [sel_info,setPath])
 
-  if(!sel_fam) {
+  if(!sel_info.branch || !sel_info.branch.info || !sel_info.family) {
     return null
   }
-  const opts = sel_fam.models.map( (mod) => ({
+  const opts = sel_info.family.models.map( (mod:CamModel) => ({
       id:mod.id,
       label:(mod.desc || mod.id) + ((mod.aka)? " (" + mod.aka + ")":'')
     })
   )
-  const sel_mod = sel_fam.models.find((mod: CamModel) => mod.id === sel)
+  const svn_root = sel_info.branch.info.build.svn
   return (
     <div className="border border-slate-300 p-1 mt-1 rounded">
       <BuildOptCtl
         title="Model"
         opts={opts}
-        sel={sel}
-        setSel={setSel} />
-      {sel_mod && (
-        <a target="_blank" href={svn_root + '/platform/'+sel_mod.id+'/notes.txt'} className="block underline hover:text-chdk-red2 my-2">Model notes</a>
+        sel={sel_info.path[2]}
+        setSel={(id)=>{setPath(makePathStr(sel_info.path,2,id))}} />
+      {sel_info.model && (
+        <a target="_blank" href={svn_root + '/platform/'+sel_info.model.id+'/notes.txt'} className="block underline hover:text-chdk-red2 my-2">Model notes</a>
       )}
     </div>
   )
 }
 
 type FwPanelProps = {
-  sel: SelId;
-  sel_mod?: CamModel;
-  setSel: SelSetter;
-  files_url: string;
+  sel_info: BuildSelection;
+  setPath: PathSetter;
+  base_url: string;
 }
 
-function FwPanel({ sel, sel_mod, setSel, files_url }: FwPanelProps) {
+function FwPanel({ sel_info, setPath, base_url }: FwPanelProps) {
   // if we only have one firmware, make it selected
   // must be before conditional return because react
   useEffect(() => {
-    if(sel_mod?.fw.length === 1 && sel_mod.fw[0].id !== sel) {
-      setSel(sel_mod.fw[0].id)
+    if(sel_info.model?.fw.length === 1 && !sel_info.fw) {
+      setPath(makePathStr(sel_info.path,3,sel_info.model.fw[0].id))
     }
-  }, [sel_mod,setSel,sel])
+  }, [sel_info,setPath])
 
-  if(!sel_mod) {
+  if(!sel_info.branch || !sel_info.branch.info || !sel_info.model) {
     return null
   }
-  const sel_fw = sel_mod.fw.find((fw: CamFirmware) => fw.id === sel)
 
-  const opts = sel_mod.fw.map( (fw) => ({
+  const opts = sel_info.model.fw.map( (fw:CamFirmware) => ({
       id:fw.id,
     })
   )
+  const files_url = base_url+sel_info.branch.info.files_path
   return (
     <div className="border border-slate-300 p-1 mt-1 rounded">
       <BuildOptCtl
         title="Canon Firmware Version"
         opts={opts}
-        sel={sel}
-        setSel={setSel} />
-        {sel_fw && (
+        sel={sel_info.path[3]}
+        setSel={(id)=>{setPath(makePathStr(sel_info.path,3,id))}} />
+        {sel_info.fw && (
           <div>
             <h3 className="font-bold text-l my-1">Complete build</h3>
             <div>
-              <a href={files_url+'/'+sel_fw.full.file} className="underline hover:text-chdk-red2">Download {sel_fw.full.file}</a> {sel_fw.full.size && (<span>({(sel_fw.full.size/1024).toFixed()} KB)</span>)}
+              <a href={files_url+'/'+sel_info.fw.full.file} className="underline hover:text-chdk-red2">Download {sel_info.fw.full.file}</a> {sel_info.fw.full.size && (<span>({(sel_info.fw.full.size/1024).toFixed()} KB)</span>)}
             </div>
             <div className="break-all w-full">
-              sha256: {sel_fw.full.sha256}
+              sha256: {sel_info.fw.full.sha256}
             </div>
             <div className="border-b border-slate-300 my-2"></div>
             <h3 className="font-bold text-l my-1">Small update build</h3>
             <div>
-              <a href={files_url+'/'+sel_fw.small.file} className="underline hover:text-chdk-red2">Download {sel_fw.small.file}</a> {sel_fw.small.size && (<span>({(sel_fw.small.size/1024).toFixed()} KB)</span>)}
+              <a href={files_url+'/'+sel_info.fw.small.file} className="underline hover:text-chdk-red2">Download {sel_info.fw.small.file}</a> {sel_info.fw.small.size && (<span>({(sel_info.fw.small.size/1024).toFixed()} KB)</span>)}
             </div>
             <div className="break-all w-full">
-              sha256: {sel_fw.small.sha256}
+              sha256: {sel_info.fw.small.sha256}
             </div>
             <div className="my-1">
               NOTE: Small file is <b>only</b> suitable for updating an existing install of a similar version. Use the complete build if unsure.
             </div>
           </div>
         )}
-        {!sel_fw && (
+        {!sel_info.fw && (
           <p className="my-2">
 A CHDK build must match the version of the Canon firmware installed on the camera. See the <a target="_blank" href="https://chdk.fandom.com/wiki/FAQ#Q._How_can_I_get_the_original_firmware_version_number_of_my_camera?" className="underline hover:text-chdk-red2">FAQ</a> for more information.
           </p>
@@ -159,33 +159,24 @@ A CHDK build must match the version of the Canon firmware installed on the camer
 }
 
 type BuildSelectorProps = {
-  build_info: BuildInfo;
+  sel_info: BuildSelection;
   base_url: string;
+  setPath: PathSetter;
 }
 
-export default function BuildSelector({ build_info, base_url }: BuildSelectorProps) {
-  const [sel_fam_id, setFam] = useState<SelId>(null);
-  const [sel_mod_id, setMod] = useState<SelId>(null);
-  const [sel_fw_id, setFw] = useState<SelId>(null);
-
-  const sel_fam = build_info.files.find((fam: CamFamily) => fam.id === sel_fam_id)
-  const sel_mod = sel_fam?.models.find((mod: CamModel) => (mod.id === sel_mod_id))
+export default function BuildSelector({ sel_info, base_url, setPath }: BuildSelectorProps) {
   return (
     <>
       <FamPanel
-        build_info={build_info}
-        sel={sel_fam_id}
-        setSel={ (f) => { setMod(null); setFam(f) }} />
+        sel_info={sel_info}
+        setPath={setPath} />
       <ModPanel
-        svn_root={build_info.build.svn}
-        sel={sel_mod_id}
-        sel_fam={sel_fam}
-        setSel={ (s) => { setFw(null); setMod(s) }} />
+        sel_info={sel_info}
+        setPath={setPath} />
       <FwPanel
-        sel={sel_fw_id}
-        sel_mod={sel_mod}
-        setSel={setFw}
-        files_url={base_url+build_info.files_path} />
+        sel_info={sel_info}
+        setPath={setPath}
+        base_url={base_url} />
     </>
   )
 }

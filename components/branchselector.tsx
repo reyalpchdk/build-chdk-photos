@@ -15,6 +15,8 @@
  *  with this software. If not, see <http://www.gnu.org/licenses/>.
  */
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+
 import BuildSummary from '@/components/buildsummary'
 import BuildSelector from '@/components/buildselector'
 
@@ -29,23 +31,24 @@ import {
   BuildInfo
 } from '@/interfaces/buildmeta';
 
+import {
+  LoadStatus,
+  BranchState,
+  BuildSelection,
+  BranchMap
+} from '@/interfaces/buildselection';
+
+import {
+  infoFromPath,
+  makePathStr
+} from '@/lib/buildselection';
+
 type Props = {
   branches: string[];
   base_url: string;
   builds_path: string;
 }
 
-enum LoadStatus {
-  LOADING = "loading",
-  LOADED = "loaded",
-  ERROR = "error",
-}
-
-type BranchState = {
-  info?: BuildInfo;
-  status: LoadStatus;
-  err?: any;
-}
 
 export default function BranchSelector({ branches, base_url, builds_path }: Props) {
   const [data, setData] = useState(() => branches.reduce( (s:any,bname) => {
@@ -53,7 +56,7 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
     return s
   },{}))
 
-  const [sel_branch, setBranch] = useState<SelId>(null);
+  const [sel_info, setSelInfo] = useState<BuildSelection>({path:[]});
 
   useEffect(() => {
     branches.forEach( (bname) => {
@@ -83,6 +86,11 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
     });
   }, [branches, base_url, builds_path])
 
+  const router = useRouter()
+  useEffect(() => {
+      setSelInfo(infoFromPath(data,router.asPath))
+  }, [data, router.asPath])
+
   const branchStatusDesc = (bname:string) => {
     if (data[bname].status === LoadStatus.LOADING) {
       return `Loading ${bname}...`
@@ -106,16 +114,16 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
         <BuildOptCtl
           title="Choose Branch"
           opts={opts}
-          sel={sel_branch}
-          setSel={setBranch}
+          sel={sel_info.path[0]}
+          setSel={(id)=>{router.push({hash:makePathStr(sel_info.path,0,id)})}}
         />
-        {sel_branch && data[sel_branch]?.status === LoadStatus.LOADED && (
-          <BuildSummary build_info={data[sel_branch].info} />
+        {sel_info.branch?.status === LoadStatus.LOADED && sel_info.branch.info && (
+          <BuildSummary build_info={sel_info.branch.info} />
         )}
-        {sel_branch && data[sel_branch]?.status === LoadStatus.ERROR && (
-          <div>{String(data[sel_branch].err)}</div>
+        {sel_info.branch?.status === LoadStatus.ERROR && (
+          <div>{String(sel_info.branch.err)}</div>
         )}
-        {!sel_branch && (
+        {!sel_info.branch && (
           <>
             <p className="my-2">
 The <i>development</i> branch may contain features under active development, and is considered <i>unstable</i>. The <i>release</i> branch is a released version which is generally only updated for bug fixes, and is considered <i>stable</i>. Note however that <i>stable</i> here mostly refers to features and interfaces, not the likelihood of encountering crashes or bugs.
@@ -129,8 +137,8 @@ See the <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.
           </>
         )}
       </div>
-      {sel_branch && data[sel_branch]?.status === LoadStatus.LOADED && (
-        <BuildSelector build_info={data[sel_branch].info} base_url={base_url} />
+      {sel_info.branch?.status === LoadStatus.LOADED && (
+        <BuildSelector sel_info={sel_info} base_url={base_url} setPath={(path) => router.push({hash:path})} />
       )}
     </div>
   )

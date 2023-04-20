@@ -25,11 +25,14 @@ type BuildOpt = {
 }
 type BuildOptCtlProps = {
   title:string;
-  opts: BuildOpt[];
+  opts?: BuildOpt[];
   sel: SelId;
   setSel: SelSetter;
 }
 export default function BuildOptCtl({ title, opts, sel, setSel }: BuildOptCtlProps ) {
+  if(!opts) {
+    return null
+  }
   const sel_opt = opts.find( (opt) => opt.id == sel )
   return (
     <div className="min-w-[19em]">
