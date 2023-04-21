@@ -107,6 +107,13 @@ export default function BranchSelector({ branches, base_url, builds_path }: Prop
     id:bname,
     label:branchStatusDesc(bname)
   }))
+  const setPath = (path:string|null,replace?:boolean) => {
+    if(replace) {
+      router.replace({hash:path})
+    } else {
+      router.push({hash:path})
+    }
+  }
 
   return (
     <div>
@@ -138,7 +145,7 @@ See the <a className="underline hover:text-chdk-red2" href="https://chdk.fandom.
         )}
       </div>
       {sel_info.branch?.status === LoadStatus.LOADED && (
-        <BuildSelector sel_info={sel_info} base_url={base_url} setPath={(path) => router.push({hash:path})} />
+        <BuildSelector sel_info={sel_info} base_url={base_url} setPath={setPath} />
       )}
     </div>
   )

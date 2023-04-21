@@ -35,7 +35,7 @@ import {
 
 import BuildOptCtl from '@/components/buildoptctl'
 
-type PathSetter = (a: string|null) => void
+type PathSetter = (path: string|null, replace?:boolean) => void
 
 type FamPanelProps = {
   sel_info: BuildSelection;
@@ -69,7 +69,7 @@ function ModPanel({ sel_info, setPath }: ModPanelProps) {
   // must be before conditional return because react
   useEffect(() => {
     if(sel_info.family?.models.length === 1 && !sel_info.model) {
-      setPath(makePathStr(sel_info.path,2,sel_info.family.models[0].id))
+      setPath(makePathStr(sel_info.path,2,sel_info.family.models[0].id),true)
     }
   }, [sel_info,setPath])
 
@@ -107,7 +107,7 @@ function FwPanel({ sel_info, setPath, base_url }: FwPanelProps) {
   // must be before conditional return because react
   useEffect(() => {
     if(sel_info.model?.fw.length === 1 && !sel_info.fw) {
-      setPath(makePathStr(sel_info.path,3,sel_info.model.fw[0].id))
+      setPath(makePathStr(sel_info.path,3,sel_info.model.fw[0].id),true)
     }
   }, [sel_info,setPath])
 
