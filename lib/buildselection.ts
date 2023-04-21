@@ -29,7 +29,11 @@ export const infoFromPath = (data:BranchMap, path:string) => {
   if(!hash) {
     return r
   }
-  const parts = hash.split('/')
+  const buildstr = new URLSearchParams(hash).get('build')
+  if(!buildstr) {
+    return r
+  }
+  const parts = buildstr.split('/')
   if(!data[parts[0]]) {
     return r
   }
@@ -60,12 +64,15 @@ export const infoFromPath = (data:BranchMap, path:string) => {
 
 export const makePathStr = (prev_path:string[], level:number, id:string|null) => {
   if(level == 0) {
-    return id || ''
+    if(!id) {
+      return ''
+    }
+    return 'build='+id
   }
   const path = prev_path.slice(0,level)
   if(id !== null) {
     path.push(id)
   }
-  return path.join('/')
+  return 'build='+path.join('/')
 }
 
