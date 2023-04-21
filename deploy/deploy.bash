@@ -33,7 +33,12 @@ function s3_cmd {
 function cf_cmd {
 	echo "aws cloudfront $*"
 	if [ -z "$dryrun" ] ; then
-		aws cloudfront "$@"
+		# msys translates /blah to drive:/blah
+		if [ -z "$MSYSTEM" ] ; then
+			aws cloudfront "$@"
+		else
+			MSYS2_ARG_CONV_EXCL='/*' aws cloudfront "$@"
+		fi
 	fi
 }
 
