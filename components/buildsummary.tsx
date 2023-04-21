@@ -36,7 +36,7 @@ export default function BuildSummary({ build_info }: Props) {
         Built: {new Date(build.utc).toLocaleString()} ({new Date(build.utc).toUTCString()})
       </div>
       <div>
-        Source: <a className="underline hover:text-chdk-red2" href={build.svn}>{build.svn}</a>
+        Source: <a className="underline hover:text-chdk-red2 break-all" href={build.svn}>{build.svn}</a>
       </div>
       <SvnLog build_info={build_info} />
     </div>
