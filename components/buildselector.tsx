@@ -20,6 +20,7 @@ import {
   PathSetter,
 } from '@/interfaces/buildselection';
 
+import FileIdPanel from '@/components/fileidpanel'
 import FamPanel from '@/components/fampanel'
 import ModPanel from '@/components/modpanel'
 import FwPanel from '@/components/fwpanel'
@@ -33,6 +34,9 @@ type BuildSelectorProps = {
 export default function BuildSelector({ sel_info, base_url, setPath }: BuildSelectorProps) {
   return (
     <>
+      <FileIdPanel
+        sel_info={sel_info}
+        setPath={setPath} />
       <FamPanel
         sel_info={sel_info}
         setPath={setPath} />
