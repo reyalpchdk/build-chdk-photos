@@ -15,33 +15,38 @@
  *  with this software. If not, see <http://www.gnu.org/licenses/>.
  */
 import {
-  CamFirmware,
-  CamModel,
   CamFamily,
-  BuildInfo
 } from '@/interfaces/buildmeta';
 
-export enum LoadStatus {
-  LOADING = "loading",
-  LOADED = "loaded",
-  ERROR = "error",
+import {
+  BuildSelection,
+  PathSetter,
+} from '@/interfaces/buildselection';
+
+import {
+  makePathStr
+} from '@/lib/buildselection';
+
+import BuildOptCtl from '@/components/buildoptctl'
+
+type FamPanelProps = {
+  sel_info: BuildSelection;
+  setPath: PathSetter
 }
 
-export type BranchState = {
-  info?: BuildInfo;
-  status: LoadStatus;
-  err?: any;
+export default function FamPanel({ sel_info, setPath }: FamPanelProps) {
+  const opts = sel_info.branch?.info?.files.map( (fam:CamFamily) => ({
+      id:fam.id,
+      label:fam.line + ' ' + fam.id + (fam.aka?' ('+fam.aka+')':'')
+    })
+  )
+  return (
+    <div className="border border-slate-300 p-1 mt-1 rounded">
+      <BuildOptCtl
+        title="Model Family"
+        opts={opts}
+        sel={sel_info.path[1]}
+        setSel={(id)=>{setPath(makePathStr(sel_info.path,1,id))}} />
+    </div>
+  )
 }
-
-export type BuildSelection = {
-  branch?:BranchState;
-  family?:CamFamily;
-  model?:CamModel;
-  fw?:CamFirmware;
-  path:string[];
-}
-
-export type BranchMap = {
-  [key:string]:BranchState;
-}
-export type PathSetter = (path: string|null, replace?:boolean) => void;
