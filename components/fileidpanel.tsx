@@ -16,9 +16,12 @@
  */
 import { useState, useEffect, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
+import ExifReader from 'exifreader'
 
 import {
   CamModel,
+  CamFamily,
+  CamFirmware,
 } from '@/interfaces/buildmeta';
 
 import {
@@ -37,15 +40,386 @@ type FileIdPanelProps = {
   setPath: PathSetter;
 }
 
+type IFDTypeDesc = {
+  name:string;
+  size:number;
+}
+
+const IFD_types:IFDTypeDesc[] = [
+  {
+    name:'INVALID',
+    size:0,
+  },
+  {
+    name:'BYTE',
+    size:1,
+  },
+  {
+    name:'ASCII',
+    size:1,
+  },
+  {
+    name:'SHORT',
+    size:2,
+  },
+  {
+    name:'LONG',
+    size:4,
+  },
+  {
+    name:'RATIONAL',
+    size:8,
+  },
+  {
+    name:'SBYTE',
+    size:1,
+  },
+  {
+    name:'UNDEFINED',
+    size:1,
+  },
+  {
+    name:'SSHORT',
+    size:2,
+  },
+  {
+    name:'SLONG',
+    size:4,
+  },
+  {
+    name:'SRATIONAL',
+    size:8,
+  },
+  {
+    name:'FLOAT',
+    size:4,
+  },
+  {
+    name:'DOUBLE',
+    size:8,
+  },
+]
+
+/*
+get 16 bit unsigned int from array of presumed little-endian bytes
+*/
+const get_u16 = (data:number[], off:number) => {
+  return data[off] | data[off+1]<<8
+}
+
+/*
+get 32 bit unsigned int from array of presumed little-endian bytes
+*/
+const get_u32 = (data:number[], off:number) => {
+  return data[off] | data[off+1]<<8 | data[off+2]<<16 | data[off+3] << 24
+}
+
+interface IFDEntry {
+  offset:number;
+  tag:number;
+  tag_type:number;
+  count:number;
+  data_size:number;
+  type_info:IFDTypeDesc;
+  value?:number,
+  data_offset?:number;
+}
+
+/*
+get IFD entry from array of presumed little-endian bytes
+*/
+const getIFDEnt = (data:number[], idx:number):IFDEntry => {
+  const off = 2 + idx*12
+  const tag = get_u16(data, off)
+  const tag_type = get_u16(data, off+2)
+  const count = get_u32(data, off+4)
+  const val_off = get_u32(data, off+8)
+  const type_info = ((tag_type < IFD_types.length)?IFD_types[tag_type]:IFD_types[0])
+  const data_size = count*type_info.size
+  return {
+    offset:off,
+    tag:tag,
+    tag_type:tag_type,
+    count:count,
+    data_size:data_size,
+    type_info:type_info,
+    value:(data_size <= 4)?val_off:undefined,
+    data_offset:(data_size > 4)?val_off:undefined,
+  }
+}
+
+/*
+convert unsigned 32 bit int containing BCD-ish Canon firmware rev to string
+*/
+const getFWRevStr = (val:number):string => {
+  let major = ((val >> 24) & 0xFF).toString()
+  let minor = ((val >> 16) & 0xFF).toString()
+  if(minor.length == 1) {
+    minor = '0' + minor
+  }
+  // 1 = revision 'a'
+  //let sub = String.fromCodePoint('a'.codePointAt(0) - 1 + ((val >> 8) & 0xff))
+  let sub = String.fromCodePoint(97 - 1 + ((val >> 8) & 0xff))
+  return major + minor + sub
+}
+
+interface MakerNoteCamID {
+  mid?:number;
+  fw_rev?:number;
+  fw_rev_str?:string;
+}
+
+const getMakerNoteValues = (mn:any):MakerNoteCamID => {
+  if(!Array.isArray(mn)) {
+    return {}
+  }
+  const mn_count = get_u16(mn,0)
+  //console.log('maker note entries',mn_count)
+  let mid = undefined
+  let fw_rev = undefined
+  let fw_rev_str = undefined
+  for(let i=0; i < mn_count; i++) {
+    const de = getIFDEnt(mn,i)
+    if(de.tag == 0x10) {
+      mid = de.value
+    } else if (de.tag == 0x1e && de.value !== undefined) {
+      fw_rev = de.value
+      fw_rev_str = getFWRevStr(fw_rev)
+    }
+    //console.log(i,de)
+  }
+  // Ixus 132 / 135
+  // mid = 54984704
+  // fw_rev_str = '100b'
+  // N / N Facebook 54001664
+  // mid = 54001664
+  // force not found
+  // mid = 123
+  // force firmware not found
+  // fw_rev_str = '100z'
+  return {
+    mid,
+    fw_rev,
+    fw_rev_str,
+  }
+}
+
+interface ModelMatch extends CamModel {
+  family:string;
+}
+
+interface ExifModelInfo extends MakerNoteCamID {
+  filename:string;
+  make?:string;
+  model?:string;
+  exact_match?:boolean;
+  matches?:ModelMatch[];
+}
+
+/*
+multiple models can have the same exif id (N / N facebook, ixus132 / ius135)
+*/
+const getModelsByMID = ( sel_info:BuildSelection, mid?:number):ModelMatch[]|undefined => {
+  const models = sel_info.branch?.info?.files.reduce((r:ModelMatch[], fam:CamFamily) => {
+    r = fam.models.reduce((rr:ModelMatch[], mod:CamModel) => {
+      if(mod.mid === mid) {
+        rr.push({...mod, family:fam.id})
+      }
+      return rr
+    },r)
+    return r
+  },[])
+  //console.log(models)
+  return models
+}
+
+type FileInfoPanelProps = {
+  exif_info?:ExifModelInfo;
+  branch?:string;
+  setPath:PathSetter;
+}
+
+function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
+  if(!exif_info || !branch) {
+    return null
+  }
+  const { filename, make, model, exact_match, mid, fw_rev, fw_rev_str, matches } = exif_info
+  const try_again = (
+    <div className="my-1">
+    Select another image to try again
+    </div>
+  )
+  const icon_bad=(<>&#10060;</>)
+  const icon_good=(<>&#9989;</>)
+  const model_desc = (
+    <div>
+    <b>Make:</b> {make || '(unknown make)'} <b>Model:</b> {model || '(unknown model)'}
+    </div>
+  )
+  let msg = null
+
+  if(!make) {
+    msg = (
+      <>
+        <div>
+          {icon_bad} No manufacturer found, file may be missing EXIF.
+        </div>
+        {try_again}
+      </>
+    )
+  } else if(make !== 'Canon') {
+    msg = (
+      <>
+        {model_desc}
+        <div>
+          {icon_bad} No matching builds. CHDK only supports Canon cameras.
+        </div>
+        {try_again}
+      </>
+    )
+  } else {
+    const mnote_desc = (
+      <div>
+      <b>Model ID:</b> {(mid && '0x'+mid.toString(16)) || '(missing)'}
+      {' '} <b>Firmware revision:</b> {(fw_rev && ` 0x${fw_rev.toString(16)} (${fw_rev_str})`) || '(missing)'}
+      </div>
+    )
+
+    // identified single firmware with build available
+    // canon model names usually include Canon, so don't include make
+    if(exact_match) {
+      msg = (
+        <>
+          {model_desc}
+          {mnote_desc}
+          <div>
+           {icon_good} A CHDK build is available, download from the link below.
+          </div>
+        </>
+      )
+    }
+    // maker note missing
+    else if(!mid || !fw_rev) {
+      msg = (
+        <>
+          {model_desc}
+          {mnote_desc}
+          <div>
+            {icon_bad} Missing Canon model or firmware revision MakerNote. May be caused by edited images, or converting from raw.
+          </div>
+          {try_again}
+        </>
+      )
+    }
+    // multiple matches
+    else if(matches && matches.length > 1) {
+      // theoretically possible for some models to have builds and others not, though not in current (2023) CHDK
+      let matched_builds = 0
+      const opts = matches.map( (mod:ModelMatch) => {
+        let fw_label = ` (no build for firmware ${fw_rev_str})`
+        let match = false
+        if(mod.fw.find((fw:CamFirmware) => fw_rev_str == fw.id)) {
+          matched_builds++
+          fw_label = ' firmware ' + fw_rev_str
+          match = true
+        }
+        return {
+          id:mod.family + '/' + mod.id + '/' + fw_rev_str,
+          label:(mod.desc || mod.id) + ((mod.aka)? " (" + mod.aka + ")":'') + fw_label,
+          disabled:!match,
+        }
+      })
+
+      msg = (
+        <>
+          {model_desc}
+          {mnote_desc}
+          <div>
+            {matched_builds?icon_good:icon_bad} Multiple, <b>different</b> cameras match model ID {'0x'+mid.toString(16)}.
+          </div>
+          {matched_builds === matches.length && (
+          <div>
+          CHDK builds are available for all identified models. You must select the camera you actually have below.
+          </div>
+          )}
+          {(matched_builds &&matched_builds !== matches.length) && (
+          <div>
+          CHDK builds are available for {matched_builds} of {matches.length} identified models. If the camera you actually have shows a build available, select it below.
+          </div>
+          )}
+          {!matched_builds && (
+          <div>
+          No CHDK builds are available for the identified models and firmware version.
+          </div>
+          )}
+          <BuildOptCtl
+            title={(matched_builds > 0)?"Select Build":"Matching models"}
+            sel={null}
+            opts={opts}
+            setSel={(id)=>{setPath(makePathStr([branch],1,id))}} />
+        </>
+      )
+    } else {
+      msg = (
+        <>
+          {model_desc}
+          {mnote_desc}
+          <div>
+            {icon_bad} No CHDK builds found for this {(matches)?'firmware version':'model'}.
+          </div>
+        </>
+        )
+      }
+    }
+    return (
+    <div>
+      <div className="border-b border-slate-300 my-2"></div>
+      <h4 className="font-bold text-l my-1">Results for {filename}</h4>
+      {msg}
+    </div>
+  )
+}
+
 export default function FileIdPanel({ sel_info, setPath }: FileIdPanelProps) {
-  const onDrop = useCallback(files => {
-    console.log('accepted files!',files)
-  }, [])
+  const [exif_info, setExifInfo] = useState<ExifModelInfo|undefined>(undefined)
+  const onDrop = useCallback((files:File[]) => {
+    //console.log('accepted files!',files)
+    ExifReader.load(files[0]).then((tags) => {
+      console.log('tags',tags)
+      let info:ExifModelInfo = {
+        filename:files[0].name,
+        make:tags.Make?.description,
+        model:tags.Model?.description,
+        exact_match:false,
+      }
+      if(tags.MakerNote?.value && tags.Make?.description === 'Canon') {
+        info = {...info,...getMakerNoteValues(tags.MakerNote.value)}
+      }
+      info.matches = getModelsByMID(sel_info, info.mid)
+      if(info.matches) {
+        const models = info.matches
+        if(models.length === 1) {
+          const fw = models[0].fw.find((fw) => fw.id === info.fw_rev_str)
+          if(fw) {
+            info.exact_match = true
+            setPath(makePathStr(sel_info.path,1,[models[0].family,models[0].id,fw.id].join('/')))
+          }
+        } else {
+        }
+      }
+      // no exact match, clear any existing slection up to branch to avoid confusion
+      if(!info.exact_match) {
+        setPath(makePathStr(sel_info.path,1,null))
+      }
+      setExifInfo(info)
+    })
+  }, [setExifInfo, sel_info, setPath])
   const {getRootProps, getInputProps, isDragActive} = useDropzone({
     accept:{
       'image/jpeg':[],
     },
     multiple:false,
+    noClick: true,
     onDrop
   })
 
@@ -55,13 +429,15 @@ export default function FileIdPanel({ sel_info, setPath }: FileIdPanelProps) {
 
   return (
     <div className="border border-slate-300 p-1 mt-1 rounded">
-      <div
-        className="p-2 border-2 border-dashed text-center bg-slate-50 border-slate-200 hover:border-sky-200"
+      <h3 className="font-bold text-l my-1">Find Build by Image</h3>
+      <label
+        className="block px-2 py-3 border-2 border-dashed text-center bg-slate-50 border-slate-200 hover:border-sky-200 cursor-pointer"
         {...getRootProps()}>
+        Click or drop camera .JPG here to identify model and firmware, or select model family below
         <input {...getInputProps()} />
-        <p>Click or drop camera .JPG to identify model and firmware by image</p>
-        <p className="text-xs my-2">NOTE: File should be unmodified camera .JPG with original EXIF. It is analyzed in your browser only, not uploaded anywhere.</p>
-      </div>
+      </label>
+        <p className="text-xs my-2">NOTE: File should be unmodified camera .JPG with original EXIF. Image is checked in your browser, not uploaded anywhere.</p>
+      <FileInfoPanel exif_info={exif_info} branch={sel_info.path[0]} setPath={setPath} />
     </div>
   )
 }
