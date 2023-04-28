@@ -158,8 +158,7 @@ const getFWRevStr = (val:number):string => {
     minor = '0' + minor
   }
   // 1 = revision 'a'
-  //let sub = String.fromCodePoint('a'.codePointAt(0) - 1 + ((val >> 8) & 0xff))
-  let sub = String.fromCodePoint(97 - 1 + ((val >> 8) & 0xff))
+  let sub = String.fromCodePoint('a'.charCodeAt(0) - 1 + ((val >> 8) & 0xff))
   return major + minor + sub
 }
 
@@ -188,6 +187,7 @@ const getMakerNoteValues = (mn:any):MakerNoteCamID => {
     }
     //console.log(i,de)
   }
+  // test values
   // Ixus 132 / 135
   // mid = 54984704
   // fw_rev_str = '100b'
@@ -249,21 +249,21 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
     Select another image to try again
     </div>
   )
-  const icon_bad=(<>&#10060;</>)
-  const icon_good=(<>&#9989;</>)
+  const icon_bad=(<>&#10060;</>) // red X
+  const icon_good=(<>&#9989;</>) // green check
   const model_desc = (
-    <div>
+    <p>
     <b>Make:</b> {make || '(unknown make)'} <b>Model:</b> {model || '(unknown model)'}
-    </div>
+    </p>
   )
   let msg = null
 
   if(!make) {
     msg = (
       <>
-        <div>
+        <p>
           {icon_bad} No manufacturer found, file may be missing EXIF.
-        </div>
+        </p>
         {try_again}
       </>
     )
@@ -271,9 +271,9 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
     msg = (
       <>
         {model_desc}
-        <div>
+        <p>
           {icon_bad} No matching builds. CHDK only supports Canon cameras.
-        </div>
+        </p>
         {try_again}
       </>
     )
@@ -292,9 +292,9 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
         <>
           {model_desc}
           {mnote_desc}
-          <div>
+          <p>
            {icon_good} A CHDK build is available, download from the link below.
-          </div>
+          </p>
         </>
       )
     }
@@ -304,9 +304,9 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
         <>
           {model_desc}
           {mnote_desc}
-          <div>
+          <p>
             {icon_bad} Missing Canon model or firmware revision MakerNote. May be caused by edited images, or converting from raw.
-          </div>
+          </p>
           {try_again}
         </>
       )
@@ -324,7 +324,7 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
           match = true
         }
         return {
-          id:mod.family + '/' + mod.id + '/' + fw_rev_str,
+          id:[mod.family,mod.id,fw_rev_str].join('/'),
           label:(mod.desc || mod.id) + ((mod.aka)? " (" + mod.aka + ")":'') + fw_label,
           disabled:!match,
         }
@@ -334,23 +334,23 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
         <>
           {model_desc}
           {mnote_desc}
-          <div>
+          <p>
             {matched_builds?icon_good:icon_bad} Multiple, <b>different</b> cameras match model ID {'0x'+mid.toString(16)}.
-          </div>
+          </p>
           {matched_builds === matches.length && (
-          <div>
+          <p>
           CHDK builds are available for all identified models. You must select the camera you actually have below.
-          </div>
+          </p>
           )}
-          {(matched_builds &&matched_builds !== matches.length) && (
-          <div>
+          {(matched_builds && matched_builds !== matches.length) && (
+          <p>
           CHDK builds are available for {matched_builds} of {matches.length} identified models. If the camera you actually have shows a build available, select it below.
-          </div>
+          </p>
           )}
           {!matched_builds && (
-          <div>
+          <p>
           No CHDK builds are available for the identified models and firmware version.
-          </div>
+          </p>
           )}
           <BuildOptCtl
             title={(matched_builds > 0)?"Select Build":"Matching models"}
@@ -364,14 +364,14 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
         <>
           {model_desc}
           {mnote_desc}
-          <div>
+          <p>
             {icon_bad} No CHDK builds found for this {(matches)?'firmware version':'model'}.
-          </div>
+          </p>
         </>
-        )
-      }
+      )
     }
-    return (
+  }
+  return (
     <div>
       <div className="border-b border-slate-300 my-2"></div>
       <h4 className="font-bold text-l my-1">Results for {filename}</h4>
@@ -398,13 +398,13 @@ export default function FileIdPanel({ sel_info, setPath }: FileIdPanelProps) {
       info.matches = getModelsByMID(sel_info, info.mid)
       if(info.matches) {
         const models = info.matches
+        // if exactly one model with build for supported firmware, select it
         if(models.length === 1) {
           const fw = models[0].fw.find((fw) => fw.id === info.fw_rev_str)
           if(fw) {
             info.exact_match = true
             setPath(makePathStr(sel_info.path,1,[models[0].family,models[0].id,fw.id].join('/')))
           }
-        } else {
         }
       }
       // no exact match, clear any existing slection up to branch to avoid confusion
@@ -414,7 +414,7 @@ export default function FileIdPanel({ sel_info, setPath }: FileIdPanelProps) {
       setExifInfo(info)
     })
   }, [setExifInfo, sel_info, setPath])
-  const {getRootProps, getInputProps, isDragActive} = useDropzone({
+  const {getRootProps, getInputProps} = useDropzone({
     accept:{
       'image/jpeg':[],
     },
@@ -436,7 +436,9 @@ export default function FileIdPanel({ sel_info, setPath }: FileIdPanelProps) {
         Click or drop camera .JPG here to identify model and firmware, or select model family below
         <input {...getInputProps()} />
       </label>
-        <p className="text-xs my-2">NOTE: File should be unmodified camera .JPG with original EXIF. Image is checked in your browser, not uploaded anywhere.</p>
+      <p className="text-xs my-2">
+        NOTE: File should be unmodified camera .JPG with original EXIF. Image is checked in your browser, not uploaded anywhere.
+      </p>
       <FileInfoPanel exif_info={exif_info} branch={sel_info.path[0]} setPath={setPath} />
     </div>
   )
