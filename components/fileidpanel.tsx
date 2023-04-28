@@ -15,6 +15,7 @@
  *  with this software. If not, see <http://www.gnu.org/licenses/>.
  */
 import { useState, useEffect, useCallback } from 'react'
+import { ErrorBoundary, FallbackProps, useErrorBoundary } from "react-error-boundary"
 import { useDropzone } from 'react-dropzone'
 import ExifReader from 'exifreader'
 
@@ -34,11 +35,6 @@ import {
 } from '@/lib/buildselection';
 
 import BuildOptCtl from '@/components/buildoptctl'
-
-type FileIdPanelProps = {
-  sel_info: BuildSelection;
-  setPath: PathSetter;
-}
 
 type IFDTypeDesc = {
   name:string;
@@ -243,6 +239,7 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
   if(!exif_info || !branch) {
     return null
   }
+
   const { filename, make, model, exact_match, mid, fw_rev, fw_rev_str, matches } = exif_info
   const try_again = (
     <div className="my-1">
@@ -380,12 +377,19 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
   )
 }
 
-export default function FileIdPanel({ sel_info, setPath }: FileIdPanelProps) {
-  const [exif_info, setExifInfo] = useState<ExifModelInfo|undefined>(undefined)
-  const onDrop = useCallback((files:File[]) => {
+type FileDropAreaProps = {
+  sel_info: BuildSelection;
+  setPath: PathSetter;
+  setExifInfo:(exif_info: ExifModelInfo|undefined) => void;
+}
+
+function FileDropArea( { sel_info, setPath, setExifInfo }: FileDropAreaProps) {
+  const { showBoundary } = useErrorBoundary();
+  const onDrop = useCallback(async (files:File[]) => {
     //console.log('accepted files!',files)
-    ExifReader.load(files[0]).then((tags) => {
-      console.log('tags',tags)
+    try {
+      const tags = await ExifReader.load(files[0])
+      //console.log('tags',tags)
       let info:ExifModelInfo = {
         filename:files[0].name,
         make:tags.Make?.description,
@@ -412,8 +416,10 @@ export default function FileIdPanel({ sel_info, setPath }: FileIdPanelProps) {
         setPath(makePathStr(sel_info.path,1,null))
       }
       setExifInfo(info)
-    })
-  }, [setExifInfo, sel_info, setPath])
+    } catch(e) {
+      showBoundary(e)
+    }
+  }, [setExifInfo, sel_info, setPath, showBoundary])
   const {getRootProps, getInputProps} = useDropzone({
     accept:{
       'image/jpeg':[],
@@ -422,6 +428,39 @@ export default function FileIdPanel({ sel_info, setPath }: FileIdPanelProps) {
     noClick: true,
     onDrop
   })
+  return (
+    <label
+      className="block px-2 py-3 border-2 border-dashed text-center bg-slate-50 border-slate-200 hover:border-sky-200 cursor-pointer"
+      {...getRootProps()}>
+      Click or drop camera .JPG here to identify model and firmware, or select model family below
+      <input {...getInputProps()} />
+    </label>
+  )
+}
+
+function ErrorFallback({ error, resetErrorBoundary }:FallbackProps) {
+  return (
+    <div>
+      <p>Error processing image</p>
+      <p>{(typeof error?.message !== 'undefined')?String(error.message):String(error)}</p>
+      <div className="my-3">
+        <button
+          className="underline hover:text-chdk-red2"
+          onClick={resetErrorBoundary}>
+          Reset
+        </button>
+      </div>
+    </div>
+  )
+}
+
+type FileIdPanelProps = {
+  sel_info: BuildSelection;
+  setPath: PathSetter;
+}
+
+export default function FileIdPanel({ sel_info, setPath }: FileIdPanelProps) {
+  const [exif_info, setExifInfo] = useState<ExifModelInfo|undefined>(undefined)
 
   if(!sel_info.branch) {
     return null
@@ -430,16 +469,15 @@ export default function FileIdPanel({ sel_info, setPath }: FileIdPanelProps) {
   return (
     <div className="border border-slate-300 p-1 mt-1 rounded">
       <h3 className="font-bold text-l my-1">Find Build by Image</h3>
-      <label
-        className="block px-2 py-3 border-2 border-dashed text-center bg-slate-50 border-slate-200 hover:border-sky-200 cursor-pointer"
-        {...getRootProps()}>
-        Click or drop camera .JPG here to identify model and firmware, or select model family below
-        <input {...getInputProps()} />
-      </label>
-      <p className="text-xs my-2">
-        NOTE: File should be unmodified camera .JPG with original EXIF. Image is checked in your browser, not uploaded anywhere.
-      </p>
-      <FileInfoPanel exif_info={exif_info} branch={sel_info.path[0]} setPath={setPath} />
+      <ErrorBoundary
+        FallbackComponent={ErrorFallback}
+        onReset={() => {setExifInfo(undefined)}}>
+        <FileDropArea sel_info={sel_info} setPath={setPath} setExifInfo={setExifInfo} />
+        <p className="text-xs my-2">
+          NOTE: File should be unmodified camera .JPG with original EXIF. Image is checked in your browser, not uploaded anywhere.
+        </p>
+        <FileInfoPanel exif_info={exif_info} branch={sel_info.path[0]} setPath={setPath} />
+      </ErrorBoundary>
     </div>
   )
 }
