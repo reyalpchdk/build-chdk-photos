@@ -120,7 +120,7 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
       <>
         {model_desc}
         <p>
-          {icon_bad} No matching builds. CHDK only supports Canon cameras.
+          {icon_bad} Non-Canon image. CHDK only supports Canon cameras.
         </p>
         {try_again}
       </>
