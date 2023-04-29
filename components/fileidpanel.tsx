@@ -132,6 +132,23 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
       {' '} <b>Firmware revision:</b> {(fw_rev && ` 0x${fw_rev.toString(16)} (${fw_rev_str})`) || '(missing)'}
       </div>
     )
+    const test_builds_msg = (
+      <p>
+        If a port is in development, test builds may be available on the
+        {' '}<a
+          className="underline hover:text-chdk-red2"
+          href="https://chdk.fandom.com/wiki/Test_releases_not_available_in_autobuilds"
+          target="_blank">
+        test releases not available in autobuilds
+        </a> wiki page or the
+        {' '}<a
+          className="underline hover:text-chdk-red2"
+          href="https://chdk.setepontos.com/index.php?action=forum"
+          target="_blank">CHDK forum</a>.
+
+      </p>
+    )
+
 
     // identified single firmware with build available
     // canon model names usually include Canon, so don't include make
@@ -207,14 +224,43 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
             setSel={(id)=>{setPath(makePathStr([branch],1,id))}} />
         </>
       )
+    // matching model, but no sub
+    } else if(matches?.length) {
+      msg = (
+        <>
+          {model_desc}
+          {mnote_desc}
+          <p>
+            {icon_bad} This model is supported by CHDK, but no build is available for firmware {fw_rev_str}.
+          </p>
+          {test_builds_msg}
+          <p>
+          In rare cases, a Canon firmware update may be available to update to a CHDK supported version. Check
+          the model wiki page or
+          {' '}<a
+            className="underline hover:text-chdk-red2"
+            href="https://chdk.setepontos.com/index.php?action=forum"
+            target="_blank">CHDK forum</a>.
+          </p>
+          <p>
+          If all else fails, support for this firmware version might be added if requested in the
+          {' '}<a
+            className="underline hover:text-chdk-red2"
+            href="https://chdk.setepontos.com/index.php?action=forum"
+            target="_blank">CHDK forum</a>.
+          </p>
+        </>
+      )
+    // no support for model
     } else {
       msg = (
         <>
           {model_desc}
           {mnote_desc}
           <p>
-            {icon_bad} No CHDK builds found for this {(matches)?'firmware version':'model'}.
+            {icon_bad} No builds are available for this model.
           </p>
+          {test_builds_msg}
         </>
       )
     }
