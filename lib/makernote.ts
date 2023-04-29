@@ -81,9 +81,19 @@ const IFD_types:IFDTypeDesc[] = [
 ]
 
 /*
+generate useful error if makernote data inconsistent
+*/
+const check_range = (data:number[], off:number, bytes:number) => {
+  if(data.length < off + bytes) {
+    throw new Error(`MakerNote offset out of range ${data.length} < ${off} + ${bytes}`)
+  }
+}
+
+/*
 get 16 bit unsigned int from array of presumed little-endian bytes
 */
 const get_u16 = (data:number[], off:number) => {
+  check_range(data,off,1)
   return data[off] | data[off+1]<<8
 }
 
@@ -91,6 +101,7 @@ const get_u16 = (data:number[], off:number) => {
 get 32 bit unsigned int from array of presumed little-endian bytes
 */
 const get_u32 = (data:number[], off:number) => {
+  check_range(data,off,4)
   return data[off] | data[off+1]<<8 | data[off+2]<<16 | data[off+3] << 24
 }
 
@@ -132,14 +143,25 @@ const getIFDEnt = (data:number[], idx:number):IFDEntry => {
 convert unsigned 32 bit int containing BCD-ish Canon firmware rev to string
 */
 const getFWRevStr = (val:number):string => {
-  let major = ((val >> 24) & 0xFF).toString()
-  let minor = ((val >> 16) & 0xFF).toString()
-  if(minor.length == 1) {
-    minor = '0' + minor
+  let major = (val >> 24) & 0xFF
+  let minor = (val >> 16) & 0xFF
+  let sub = (val >> 8) & 0xFF
+  // generally only 1 or 2
+  if(major > 0x10) {
+    throw new Error(`unexpected firmware major ver ${major}`)
   }
-  // 1 = revision 'a'
-  let sub = String.fromCodePoint('a'.charCodeAt(0) - 1 + ((val >> 8) & 0xff))
-  return major + minor + sub
+  // limits unclear, but over 0x99 would break BCD
+  if(minor > 0x99) {
+    throw new Error(`unexpected firmware minor ver ${minor}`)
+  }
+  // a to z, starting at 1
+  if(sub < 1 || sub > 26) {
+    throw new Error(`unexpected firmware sub ver ${sub}`)
+  }
+
+  return major.toString(16)
+    + (minor < 0x10?'0':'') + minor.toString(16)
+    + String.fromCodePoint('a'.charCodeAt(0) - 1 + sub)
 }
 
 export interface MakerNoteCamID {
