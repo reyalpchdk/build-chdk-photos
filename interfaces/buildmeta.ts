@@ -17,7 +17,7 @@
 /*
 types representing build metadata json files
 */
-export type BuildDesc = {
+export interface BuildDesc {
   desc: string;
   type: string;
   type_desc: string;
@@ -28,25 +28,25 @@ export type BuildDesc = {
   svn_checkout: string;
 }
 
-export type BuildStatus = {
+export interface BuildStatus {
   status_version: string;
   build: BuildDesc;
   status: boolean;
 }
 
-export type BuildFileInfo = {
+export interface BuildFileInfo {
   file: string;
   sha256: string;
   size: number;
 }
 
-export type CamFirmware = {
+export interface CamFirmware {
   id: string;
   full: BuildFileInfo;
   small: BuildFileInfo;
 }
 
-export type CamModel = {
+export interface CamModel {
   desc?: string;
   id: string;
   mid?: number;
@@ -55,25 +55,25 @@ export type CamModel = {
   fw: CamFirmware[];
 }
 
-export type CamFamily = {
+export interface CamFamily {
   id: string;
   line: string;
   aka?: string;
   models: CamModel[];
 }
 
-export type PortState = {
+export interface PortState {
   desc: string;
   count: number;
 }
 
-export type BuildCounts = {
+export interface BuildCounts {
   models: number;
   cameras: number;
   states: PortState[];
 }
 
-export type SvnLogEntry = {
+export interface SvnLogEntry {
   svn: string;
   revision: string;
   author: string;
@@ -81,7 +81,7 @@ export type SvnLogEntry = {
   msg: string[];
 }
 
-export type BuildInfo = {
+export interface BuildInfo {
   info_version: string;
   build: BuildDesc;
   files_path: string;

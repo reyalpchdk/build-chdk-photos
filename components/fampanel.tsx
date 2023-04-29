@@ -14,40 +14,39 @@
  *  You should have received a copy of the GNU General Public License
  *  with this software. If not, see <http://www.gnu.org/licenses/>.
  */
+import {
+  CamFamily,
+} from '@/interfaces/buildmeta';
 
 import {
   BuildSelection,
   PathSetter,
 } from '@/interfaces/buildselection';
 
-import FileIdPanel from '@/components/fileidpanel'
-import FamPanel from '@/components/fampanel'
-import ModPanel from '@/components/modpanel'
-import FwPanel from '@/components/fwpanel'
+import {
+  makePathStr
+} from '@/lib/buildselection';
 
-type BuildSelectorProps = {
+import BuildOptCtl from '@/components/buildoptctl'
+
+type FamPanelProps = {
   sel_info: BuildSelection;
-  base_url: string;
-  setPath: PathSetter;
+  setPath: PathSetter
 }
 
-export default function BuildSelector({ sel_info, base_url, setPath }: BuildSelectorProps) {
+export default function FamPanel({ sel_info, setPath }: FamPanelProps) {
+  const opts = sel_info.branch?.info?.files.map( (fam:CamFamily) => ({
+      id:fam.id,
+      label:fam.line + ' ' + fam.id + (fam.aka?' ('+fam.aka+')':'')
+    })
+  )
   return (
-    <>
-      <FileIdPanel
-        sel_info={sel_info}
-        setPath={setPath} />
-      <FamPanel
-        sel_info={sel_info}
-        setPath={setPath} />
-      <ModPanel
-        sel_info={sel_info}
-        setPath={setPath} />
-      <FwPanel
-        sel_info={sel_info}
-        setPath={setPath}
-        base_url={base_url} />
-    </>
+    <div className="border border-slate-300 p-1 mt-1 rounded">
+      <BuildOptCtl
+        title="Model Family"
+        opts={opts}
+        sel={sel_info.path[1]}
+        setSel={(id)=>{setPath(makePathStr(sel_info.path,1,id))}} />
+    </div>
   )
 }
-

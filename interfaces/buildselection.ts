@@ -44,3 +44,4 @@ export type BuildSelection = {
 export type BranchMap = {
   [key:string]:BranchState;
 }
+export type PathSetter = (path: string|null, replace?:boolean) => void;
