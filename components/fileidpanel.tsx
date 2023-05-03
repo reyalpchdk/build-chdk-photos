@@ -144,9 +144,29 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
         {' '}<a
           className="underline hover:text-chdk-red2"
           href="https://chdk.setepontos.com/index.php?action=forum"
-          target="_blank">CHDK forum</a>.
-
+          target="_blank">CHDK forum</a>. If you use a test build <b>please</b> report results on the forum
+        {' '}so it can be added to the autobuild.
       </p>
+    )
+    const unsupported_sub_msg = (
+      <>
+          {test_builds_msg}
+          <p>
+          In rare cases, a Canon firmware update may be available to update to a CHDK supported version. Check
+          the model wiki page or
+          {' '}<a
+            className="underline hover:text-chdk-red2"
+            href="https://chdk.setepontos.com/index.php?action=forum"
+            target="_blank">CHDK forum</a>.
+          </p>
+          <p>
+          If all else fails, support for this firmware version might be added if requested in the
+          {' '}<a
+            className="underline hover:text-chdk-red2"
+            href="https://chdk.setepontos.com/index.php?action=forum"
+            target="_blank">CHDK forum</a>.
+          </p>
+      </>
     )
 
 
@@ -207,15 +227,18 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
           CHDK builds are available for all identified models. You must select the camera you actually have below.
           </p>
           )}
-          {(matched_builds && matched_builds !== matches.length) && (
+          {(matched_builds !== 0 && matched_builds !== matches.length) && (
           <p>
           CHDK builds are available for {matched_builds} of {matches.length} identified models. If the camera you actually have shows a build available, select it below.
           </p>
           )}
-          {!matched_builds && (
-          <p>
-          No CHDK builds are available for the identified models and firmware version.
-          </p>
+          {matched_builds === 0 && (
+          <>
+            <p>
+            No CHDK builds are available for the identified models and firmware version.
+            </p>
+            {unsupported_sub_msg}
+          </>
           )}
           <BuildOptCtl
             title={(matched_builds > 0)?"Select Build":"Matching models"}
@@ -233,22 +256,7 @@ function FileInfoPanel({exif_info, branch, setPath}:FileInfoPanelProps) {
           <p>
             {icon_bad} This model is supported by CHDK, but no build is available for firmware {fw_rev_str}.
           </p>
-          {test_builds_msg}
-          <p>
-          In rare cases, a Canon firmware update may be available to update to a CHDK supported version. Check
-          the model wiki page or
-          {' '}<a
-            className="underline hover:text-chdk-red2"
-            href="https://chdk.setepontos.com/index.php?action=forum"
-            target="_blank">CHDK forum</a>.
-          </p>
-          <p>
-          If all else fails, support for this firmware version might be added if requested in the
-          {' '}<a
-            className="underline hover:text-chdk-red2"
-            href="https://chdk.setepontos.com/index.php?action=forum"
-            target="_blank">CHDK forum</a>.
-          </p>
+          {unsupported_sub_msg}
         </>
       )
     // no support for model
